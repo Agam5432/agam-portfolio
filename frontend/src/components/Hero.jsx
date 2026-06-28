@@ -48,7 +48,14 @@ export default function Hero({ goTo }) {
           transform: "translate(20%, -20%)",
         }}
       />
-      
+      <div
+        className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)",
+          transform: "translate(-20%, 20%)",
+        }}
+      />
 
       {/* Badge */}
       <motion.div
