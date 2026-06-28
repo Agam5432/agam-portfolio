@@ -7,22 +7,7 @@ require("dotenv").config();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: function(origin, callback) {
-    const allowed = [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://agam-portfolio-vert.vercel.app",
-    ]
-    // Allow if origin is in list OR no origin (Postman/server calls)
-    if (!origin || allowed.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error("Not allowed by CORS"))
-    }
-  },
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
 // Rate limiter for Nexora
