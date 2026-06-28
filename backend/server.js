@@ -8,12 +8,19 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174", 
-    "https://agam-portfolio-vert.vercel.app",
-    /\.vercel\.app$/  // sare vercel domains allow
-  ],
+  origin: function(origin, callback) {
+    const allowed = [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://agam-portfolio-vert.vercel.app",
+    ]
+    // Allow if origin is in list OR no origin (Postman/server calls)
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error("Not allowed by CORS"))
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
