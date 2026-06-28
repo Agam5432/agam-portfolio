@@ -11,8 +11,8 @@ const DEFAULTS = {
   subtitle: 'AI Integration Engineer',
   tagline: 'Building production-grade web apps with real AI — computer vision, LLMs, and everything in between.',
   badge: 'Open to Opportunities',
-  githubUrl: 'https://github.com',
-  linkedinUrl: 'https://linkedin.com',
+  githubUrl: 'https://github.com/Agam5432',
+  linkedinUrl: 'www.linkedin.com/in/agam-tyagi-6624a7204',
   resumeUrl: '/Agam_Tyagi_Resume.pdf',
   stats: [
     { num: '2+', label: 'Years Experience' },
