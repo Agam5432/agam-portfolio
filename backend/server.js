@@ -88,7 +88,7 @@ app.get("/api/seed-all", async (req, res) => {
     await Experience.create({
       role: "Full Stack Developer",
       company: "Backup Infotech",
-      duration: "Jul 2024 – Present",
+      period: "Jul 2024 – Present",
       location: "Chandigarh, India",
       points: [
         "Designed and deployed 5+ production-grade full-stack web applications using PHP, Laravel, Node.js, Express.js & MySQL",
@@ -105,8 +105,8 @@ app.get("/api/seed-all", async (req, res) => {
     // Education
     await Education.deleteMany({});
     await Education.insertMany([
-      { degree: "Master of Computer Applications (MCA)", university: "Chandigarh University", year: "Jul 2022 – Jun 2024", icon: "🎓", highlight: true, order: 1 },
-      { degree: "Bachelor of Computer Applications (BCA)", university: "Ch. Charan Singh University", year: "Jul 2019 – Jun 2022", icon: "📚", highlight: false, order: 2 },
+      { degree: "Master of Computer Applications (MCA)", uni: "Chandigarh University", year: "Jul 2022 – Jun 2024", icon: "🎓", highlight: true, order: 1 },
+      { degree: "Bachelor of Computer Applications (BCA)", uni: "Ch. Charan Singh University", year: "Jul 2019 – Jun 2022", icon: "📚", highlight: false, order: 2 },
     ]);
 
     // Projects
