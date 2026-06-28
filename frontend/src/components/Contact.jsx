@@ -41,8 +41,8 @@ export default function Contact() {
           {[
             { icon: <Mail size={16} />, label: 'agamtyagi2001@gmail.com', href: 'mailto:agamtyagi2001@gmail.com' },
             { icon: <Phone size={16} />, label: '+91 82181 85432', href: 'tel:+918218185432' },
-            { icon: <Github size={16} />, label: 'GitHub', href: 'https://github.com' },
-            { icon: <Linkedin size={16} />, label: 'LinkedIn', href: 'https://linkedin.com' },
+            { icon: <Github size={16} />, label: 'GitHub', href: 'https://github.com/Agam5432' },
+            { icon: <Linkedin size={16} />, label: 'LinkedIn', href: 'https://www.linkedin.com/in/agam-tyagi-6624a7204' },
           ].map((item, i) => (
             <motion.a key={item.label} href={item.href} target={item.href.startsWith('http') ? '_blank' : '_self'}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
