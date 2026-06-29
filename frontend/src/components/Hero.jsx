@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Download, ArrowRight, Github, Linkedin } from "lucide-react";
 import axios from "axios";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const DEFAULTS = {
   name: "Agam Tyagi",
@@ -120,6 +121,7 @@ function CodeEditor() {
 
 export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
+   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`/api/profile`)
@@ -186,11 +188,11 @@ export default function Hero({ goTo }) {
           {/* Buttons */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.39 }}
             className="flex flex-wrap gap-3 mb-16">
-            <button onClick={() => goTo("projects")}
+            <button onClick={() => navigate("/projects")}
               className="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               View Projects <ArrowRight size={16} />
             </button>
-            <button onClick={() => goTo("contact")}
+            <button onClick={() => navigate("/contact")}
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               Let's Talk
             </button>
