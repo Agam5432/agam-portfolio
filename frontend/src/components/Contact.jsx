@@ -6,7 +6,6 @@ import axios from 'axios'
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [status, setStatus] = useState('idle') // idle | loading | success | error
-  const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
   const submit = async (e) => {
@@ -14,7 +13,7 @@ export default function Contact() {
     if (!form.name || !form.email || !form.message) return
     setStatus('loading')
     try {
-      await axios.post(`${BASE}/api/contact`, form)
+      await axios.post(`/api/contact`, form)
       setStatus('success')
       setForm({ name: '', email: '', message: '' })
     } catch {

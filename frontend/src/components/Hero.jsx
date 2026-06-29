@@ -3,15 +3,13 @@ import { motion } from "framer-motion";
 import { Download, ArrowRight, Github, Linkedin } from "lucide-react";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 const DEFAULTS = {
   name: "Agam Tyagi",
   title: "Full Stack Developer",
   subtitle: "AI Integration Engineer",
   tagline: "Building production-grade web apps with real AI — computer vision, LLMs, and everything in between.",
   badge: "Open to Opportunities",
-  badge2: "On-site / Office-based",
+  badge2: "Open to On-site / Office-based",
   githubUrl: "https://github.com/Agam5432",
   linkedinUrl: "https://www.linkedin.com/in/agam-tyagi-6624a7204",
   resumeUrl: "/Agam_Tyagi_Resume.pdf",
@@ -124,7 +122,7 @@ export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
 
   useEffect(() => {
-    axios.get(`${API}/api/profile`)
+    axios.get(`/api/profile`)
       .then((r) => setData({ ...DEFAULTS, ...r.data }))
       .catch(() => {});
   }, []);

@@ -2,8 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, MessageCircle } from 'lucide-react'
 import axios from 'axios'
-
-const BASE = import.meta.env.VITE_API_URL || ''
 const QUICK = [
   "What are Agam's skills?",
   "Tell me about his projects",
@@ -36,7 +34,7 @@ export default function NexoraChat() {
     setLoading(true)
 
     try {
-      const res = await axios.post(`${BASE}/api/nexora/chat`, {
+      const res = await axios.post(`/api/nexora/chat`, {
         message: msg,
         history: history.slice(-6)
       })

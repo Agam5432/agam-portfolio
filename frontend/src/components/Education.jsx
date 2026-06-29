@@ -3,8 +3,6 @@ import { motion } from 'framer-motion'
 import { GraduationCap } from 'lucide-react'
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
 const DEFAULT_EDU = [
   { degree: 'Master of Computer Applications (MCA)', uni: 'Chandigarh University', year: 'Jul 2022 – Jun 2024', icon: '🎓', highlight: true, note: 'Computer Applications background gave me a solid foundation in data structures, algorithms, OOP, and system design — which I\'ve applied across every production project.' },
   { degree: 'Bachelor of Computer Applications (BCA)', uni: 'Ch. Charan Singh University', year: 'Jul 2019 – Jun 2022', icon: '📚', highlight: false, note: '' },
@@ -14,7 +12,7 @@ export default function Education() {
   const [edu, setEdu] = useState(DEFAULT_EDU)
 
   useEffect(() => {
-    axios.get(`${API}/api/education`)
+    axios.get('/api/education')
       .then(r => {
         if (r.data?.length > 0) setEdu(r.data)
       })

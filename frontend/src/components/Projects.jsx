@@ -4,7 +4,6 @@ import { ExternalLink, Github, Loader2 } from 'lucide-react'
 import axios from 'axios'
 
 // Fallback data if backend not running
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 const FALLBACK_PROJECTS = [
   { _id: '1', title: 'AI Face Authentication & Liveness Detection', description: 'Biometric authentication with real-time liveness detection — blink & head-movement verification to prevent spoofing and replay attacks.', icon: '🤖', tags: ['AI', 'Security'], stack: ['Node.js', 'FastAPI', 'DeepFace', 'MediaPipe', 'PostgreSQL', 'Prisma'], featured: true, order: 1 },
   { _id: '2', title: 'Nexora AI Assistant', description: 'AI conversational assistant with multi-model LLM support (Groq + Ollama), real-time web search & multilingual responses.', icon: '🧠', tags: ['AI', 'LLM'], stack: ['Python', 'Groq API', 'Ollama', 'Gradio', 'Tavily'], featured: true, order: 2 },
@@ -101,7 +100,7 @@ export default function Projects() {
   const [showAll, setShowAll] = useState(false)
 
 useEffect(() => {
-    axios.get(`${BASE}/api/projects`)
+    axios.get(`/api/projects`)
       .then(r => {
         // Array check karo
         const data = Array.isArray(r.data) ? r.data : []

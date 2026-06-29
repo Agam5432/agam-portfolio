@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
 const DEFAULT_CARDS = [
   { icon: '🤖', title: 'AI/ML Integration', desc: 'DeepFace, MediaPipe, OpenCV, LLMs — actual AI engineering, not just API calls' },
   { icon: '⚡', title: 'Full Stack', desc: 'React, Node.js, PHP, Laravel, FastAPI — end to end delivery across the stack' },
@@ -25,7 +23,7 @@ export default function About() {
   const [data, setData] = useState(DEFAULTS)
 
   useEffect(() => {
-    axios.get(`${API}/api/profile`)
+    axios.get(`/api/profile`)
       .then(r => setData({ ...DEFAULTS, ...r.data }))
       .catch(() => {})
   }, [])

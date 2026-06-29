@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
 const DEFAULT_GROUPS = [
   { label: 'Frontend', chips: ['React.js', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap', 'jQuery', 'AJAX'], isAI: false },
   { label: 'Backend', chips: ['Node.js', 'Express.js', 'PHP', 'Laravel', 'FastAPI', 'REST APIs', 'MVC'], isAI: false },
@@ -19,7 +17,7 @@ export default function Skills() {
   const [skillGroups, setSkillGroups] = useState(DEFAULT_GROUPS)
 
   useEffect(() => {
-    axios.get(`${API}/api/skills`)
+    axios.get(`/api/skills`)
       .then(r => {
         if (r.data?.length > 0) setSkillGroups(r.data)
       })

@@ -6,11 +6,10 @@ import {
   LogOut, Plus, Trash2, Edit, Eye, EyeOff, Save, X, BarChart2,
   User, Zap, Briefcase, GraduationCap
 } from 'lucide-react'
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const api = (token) => axios.create({
-  baseURL: BASE,
-  headers: { Authorization: `Bearer ${token}` }
-})
+  const api = (token) => axios.create({
+    baseURL: '/api',
+    headers: { Authorization: `Bearer ${token}` }
+  })
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },

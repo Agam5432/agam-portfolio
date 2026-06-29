@@ -3,8 +3,6 @@ import { motion } from 'framer-motion'
 import { Briefcase, Calendar } from 'lucide-react'
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
 const DEFAULT_EXP = [
   {
     _id: 'default',
@@ -28,7 +26,7 @@ export default function Experience() {
   const [experiences, setExperiences] = useState(DEFAULT_EXP)
 
   useEffect(() => {
-    axios.get(`${API}/api/experience`)
+    axios.get(`/api/experience`)
       .then(r => {
         if (r.data?.length > 0) setExperiences(r.data)
       })

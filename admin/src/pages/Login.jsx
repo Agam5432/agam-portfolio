@@ -7,14 +7,13 @@ export default function Login({ onLogin }) {
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
   const submit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     try {
-      const res = await axios.post(`${API}/api/admin/login`, form)
+      const res = await axios.post(`/api/admin/login`, form)
       onLogin(res.data.token)
     } catch {
       setError('Invalid credentials. Try again.')
