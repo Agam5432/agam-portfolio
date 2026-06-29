@@ -7,7 +7,6 @@ import {
   User, Zap, Briefcase, GraduationCap
 } from 'lucide-react'
   const api = (token) => axios.create({
-    baseURL: '/api',
     headers: { Authorization: `Bearer ${token}` }
   })
 
