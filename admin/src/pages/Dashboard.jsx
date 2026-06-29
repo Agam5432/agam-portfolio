@@ -563,9 +563,9 @@ export default function Dashboard({ token, logout }) {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#0a0a0f' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#0a0a0f' }}>
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 flex flex-col py-6 px-4 gap-1"
+      <aside className="w-64 bg-[#111] fixed left-0 top-0 h-screen"
         style={{ background: '#0d0d14', borderRight: '1px solid #2a2a3a' }}>
         <div className="px-2 mb-6">
           <p className="text-lg font-black" style={{ background: 'linear-gradient(90deg,#6c63ff,#00d4ff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Admin</p>
@@ -586,7 +586,7 @@ export default function Dashboard({ token, logout }) {
           )
         })}
         <button onClick={logout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium mt-auto"
+          className="flex items-center gap-3 px-3 py-2.5 mt-10 rounded-xl text-sm font-medium mt-auto"
           style={{ color: '#ef4444', border: '1px solid transparent' }}
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
           onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -595,7 +595,7 @@ export default function Dashboard({ token, logout }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="ml-64 flex-1 overflow-y-auto h-screen">
 
         {tab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
