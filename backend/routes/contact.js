@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Contact = require("../models/Contact");
-const nodemailer = require("nodemailer");
+const requireAuth = require("../middleware/auth");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /api/contact
 router.post("/", async (req, res) => {
@@ -13,50 +16,34 @@ router.post("/", async (req, res) => {
     }
 
     // Save to MongoDB
-    const contact = await Contact.create({ name, email, message });
+    await Contact.create({ name, email, message });
 
-    // Send email notification (optional)
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
-          secure: false,
-          auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        });
+    // Send email using Resend
+    await resend.emails.send({
+      from: "Portfolio <onboarding@resend.dev>",
+      to: ["agamtyagi2001@gmail.com"], // 👈 change this
+      subject: `Portfolio Contact: ${name}`,
+      html: `
+        <h3>New Contact from Portfolio</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong> ${message}</p>
+      `,
+    });
 
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: process.env.EMAIL_USER,
-          subject: `Portfolio Contact: ${name}`,
-          html: `
-            <h3>New Contact from Portfolio</h3>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Message:</strong> ${message}</p>
-          `
-        });
-      } catch (mailErr) {
-        console.log("Email send failed (non-critical):", mailErr.message);
-      }
-    }
-
-    res.json({ success: true, message: "Message sent successfully!" });
+    return res.json({
+      success: true,
+      message: "Message sent successfully!",
+    });
 
   } catch (err) {
     console.error("Contact error:", err);
-    res.status(500).json({ error: "Failed to send message." });
+    return res.status(500).json({ error: "Failed to send message." });
   }
 });
 
 // GET /api/contact (admin only)
-router.get("/", require("../middleware/auth"), async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
     res.json(contacts);
