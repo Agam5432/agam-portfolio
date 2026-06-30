@@ -30,6 +30,8 @@ const trackVisitor = async (req, res, next) => {
       res.cookie("visitorId", visitorId, {
         maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
         httpOnly: true,
+        sameSite: "none",
+        secure: true
       });
     }
 
@@ -66,6 +68,8 @@ const trackVisitor = async (req, res, next) => {
       res.cookie("sessionId", sessionId, {
         maxAge: SESSION_TIMEOUT,
         httpOnly: true,
+        sameSite: "none",
+        secure: true
       });
     
 

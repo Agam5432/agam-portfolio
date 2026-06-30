@@ -34,8 +34,10 @@ useEffect(() => {
   sessionStorage.setItem("lastTrackedPage", page);
 
   axios.post("/api/analytics/track-visit", {
-    page
-  });
+  page
+}, {
+  withCredentials: true
+});
 
 }, [location.pathname]);
   return (
