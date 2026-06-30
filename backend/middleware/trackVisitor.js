@@ -37,10 +37,14 @@ const trackVisitor = async (req, res, next) => {
     let visitor = await Visitor.findOne({ visitorId });
 
     if (!visitor) {
+      sessionId = uuidv4();
+
       visitor = new Visitor({
         visitorId,
-        sessionId: uuidv4(),
+        sessionId,
         lastVisit: now,
+        visitCount: 1,
+        sessionCount: 1,
       });
 
       isNewSession = true;
@@ -54,18 +58,18 @@ const trackVisitor = async (req, res, next) => {
 
         visitor.sessionCount += 1;
       }
-
+      visitor.visitCount += 1;
+    }
       // 🍪 update session cookie
       res.cookie("sessionId", sessionId, {
         maxAge: SESSION_TIMEOUT,
         httpOnly: true,
       });
-    }
+    
 
     // 📊 UPDATE COMMON DATA
     visitor.sessionId = sessionId;
     visitor.lastVisit = now;
-    visitor.visitCount += 1;
 
     // 🌐 optional tracking (if you pass from frontend)
     visitor.browser = req.headers["user-agent"] || "";

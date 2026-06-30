@@ -18,7 +18,7 @@ const VisitorSchema = new mongoose.Schema({
 
   visitCount: {
     type: Number,
-    default: 1
+    default: 0
   },
 
   sessionCount: {          // 🔥 ADD THIS
