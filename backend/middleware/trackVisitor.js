@@ -5,7 +5,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 // Routes that should NEVER count as a "visit" — these are admin/dashboard
 // calls, not real portfolio visitors hitting the site.
-const SKIP_PREFIXES = ["/api/analytics", "/api/admin"];
+const SKIP_PREFIXES = ["/api/analytics", "/api/admin", "/api/nexora"];
 
 const trackVisitor = async (req, res, next) => {
   try {
