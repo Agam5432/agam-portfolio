@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Download, ArrowRight, Github, Linkedin } from "lucide-react";
 import axios from "axios";
@@ -121,13 +121,27 @@ function CodeEditor() {
 
 export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
+
+  // 🛡 Guard against React StrictMode double-firing useEffect in dev mode,
+  // which was causing 2 visitor documents to be created on a single page load.
+  const hasFetchedProfile = useRef(false);
 
   useEffect(() => {
-    axios.get(`/api/profile`)
+    if (hasFetchedProfile.current) return;
+    hasFetchedProfile.current = true;
+
+    axios.get(`/api/profile`, { withCredentials: true })
       .then((r) => setData({ ...DEFAULTS, ...r.data }))
       .catch(() => {});
   }, []);
+
+  // 📥 Track resume downloads in the backend, then let the browser proceed
+  // with the actual file download via the <a download> tag.
+  const handleResumeDownload = () => {
+    axios.post(`/api/analytics/resume-download`, {}, { withCredentials: true })
+      .catch(() => {}); // never block the download if tracking fails
+  };
 
   const nameParts = data.name.split(" ");
   const firstName = nameParts[0];
@@ -196,7 +210,7 @@ export default function Hero({ goTo }) {
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               Let's Talk
             </button>
-            <a href={data.resumeUrl} download
+            <a href={data.resumeUrl} download onClick={handleResumeDownload}
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               <Download size={15} /> Resume
             </a>

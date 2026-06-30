@@ -1,0 +1,123 @@
+const Visitor = require("../models/Visitors");
+
+const getUniqueVisitors = async (req, res) => {
+
+   try {
+    const count = await Visitor.countDocuments();
+    res.json({ uniqueVisitors: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getTodayVisitors = async (req, res) => {
+    try {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+
+        const visitors = await Visitor.find({
+        lastVisit: { $gte: start }
+        });
+
+        res.json({
+        todayVisitors: visitors.length
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getTotalSessions = async (req, res) => {
+try {
+    const data = await Visitor.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalSessions: { $sum: "$sessionCount" }
+        }
+      }
+    ]);
+
+    res.json({
+      totalSessions: data[0]?.totalSessions || 0
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getPageViews = async (req, res) => {
+    try {
+        const data = await Visitor.aggregate([
+        {
+            $group: {
+            _id: null,
+            totalViews: { $sum: "$visitCount" }
+            }
+        }
+        ]);
+
+        res.json({
+        totalPageViews: data[0]?.totalViews || 0
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getResumeDownloads = async (req, res) => {
+    try {
+        const count = await Visitor.countDocuments({
+        resumeDownloaded: true
+        });
+
+        res.json({
+        resumeDownloads: count
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getAllVisitors = async (req, res) => {
+  try {
+    const visitors = await Visitor.find()
+      .sort({ lastVisit: -1 })   // most recent first
+      .limit(200);               // adjust/remove limit as needed
+ 
+    res.json(visitors);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const markResumeDownload = async (req, res) => {
+  try {
+    const visitorId = req.cookies.visitorId;
+    if (!visitorId) {
+      return res.status(200).json({ ok: false, reason: "no visitorId cookie" });
+    }
+ 
+    await Visitor.findOneAndUpdate(
+      { visitorId },
+      { resumeDownloaded: true }
+    );
+ 
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = {
+  getAllVisitors,
+  getUniqueVisitors,
+  getTodayVisitors,
+  getTotalSessions,
+  getPageViews,
+  getResumeDownloads,
+  markResumeDownload
+};
