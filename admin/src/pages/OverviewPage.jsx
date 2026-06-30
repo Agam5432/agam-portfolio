@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FolderOpen, Mail, MessageSquare, Plus, User } from 'lucide-react'
-import { api, StatCard } from './shared'
+import { api, StatCard } from './Shared'
 
 export default function OverviewPage({ token, setTab, setShowForm }) {
   const [stats, setStats] = useState({})
