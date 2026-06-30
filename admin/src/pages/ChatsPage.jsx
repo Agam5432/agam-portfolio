@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { api } from './shared'
+import { api } from './Shared'
 
 export default function ChatsPage({ token }) {
   const [chats, setChats] = useState([])

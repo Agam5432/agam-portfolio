@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Calendar, Activity, Eye, Download, ArrowRight } from 'lucide-react'
-import { api } from './shared'
+import { api } from './Shared'
 
 function AnalyticsCard({ label, value, icon: Icon, color, onViewDetail, delay }) {
   return (

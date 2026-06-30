@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { api, Field, TextArea, SaveBtn, inputStyle, focusStyle, blurStyle } from './shared'
+import { api, Field, TextArea, SaveBtn, inputStyle, focusStyle, blurStyle } from './Shared'
 
 export default function ProfilePage({ token }) {
   const [form, setForm] = useState(null)

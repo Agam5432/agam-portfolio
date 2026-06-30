@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, X } from 'lucide-react'
-import { api, Field, TextArea, Toggle, SaveBtn } from './shared'
+import { api, Field, TextArea, Toggle, SaveBtn } from './Shared'
 
 function EduForm({ token, initial, onSave, onCancel }) {
   const blank = { degree: '', uni: '', year: '', icon: '🎓', highlight: false, note: '', order: 0 }

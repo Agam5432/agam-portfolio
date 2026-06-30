@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Trash2 } from 'lucide-react'
-import { api } from './shared'
+import { api } from './Shared'
 
 export default function MessagesPage({ token }) {
   const [contacts, setContacts] = useState([])

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, X } from 'lucide-react'
-import { api, Field, Toggle, SaveBtn } from './shared'
+import { api, Field, Toggle, SaveBtn } from './Shared'
 
 function SkillForm({ token, initial, onSave, onCancel }) {
   const blank = { label: '', chips: '', isAI: false, order: 0 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react'
-import { api, Field, TextArea, Toggle, SaveBtn } from './shared'
+import { api, Field, TextArea, Toggle, SaveBtn } from './Shared'
 
 function ProjectForm({ token, initial, onSave, onCancel }) {
   const blank = { title: '', description: '', icon: '🚀', tags: '', stack: '', liveUrl: '', githubUrl: '', featured: false, visible: true, order: 0 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Monitor, Smartphone, Download } from 'lucide-react'
-import { api } from './shared'
+import { api } from './Shared'
 
 const FILTER_LABELS = {
   unique: 'Unique Visitors',

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Edit, Trash2, X } from 'lucide-react'
-import { api, Field, SaveBtn, inputStyle, focusStyle, blurStyle } from './shared'
+import { api, Field, SaveBtn, inputStyle, focusStyle, blurStyle } from './Shared'
 
 function ExpForm({ token, initial, onSave, onCancel }) {
   const blank = { role: '', company: '', period: '', location: '', points: '', tags: '', order: 0 }
