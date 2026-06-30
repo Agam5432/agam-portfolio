@@ -127,7 +127,6 @@ const trackVisitorpage = async (req, res) => {
     await Visitor.findOneAndUpdate(
       { visitorId },
       {
-        $inc: { visitCount: 1 },
         $set: {
           currentPage: page,
           lastVisit: new Date(),
