@@ -51,12 +51,14 @@ const trackVisitor = async (req, res, next) => {
     } else {
       // ⏱ SESSION CHECK
       const timeDiff = now - new Date(visitor.lastVisit);
-
+      if (!visitor.sessionCount) {
+        visitor.sessionCount = 1;
+      }
       if (!sessionId || timeDiff > SESSION_TIMEOUT) {
         sessionId = uuidv4();
         isNewSession = true;
 
-        visitor.sessionCount += 1;
+        visitor.sessionCount = (visitor.sessionCount || 0) + 1;
       }
       
   }
