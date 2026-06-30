@@ -59,7 +59,7 @@ const trackVisitor = async (req, res, next) => {
         visitor.sessionCount += 1;
       }
       visitor.visitCount += 1;
-    }
+  }
       // 🍪 update session cookie
       res.cookie("sessionId", sessionId, {
         maxAge: SESSION_TIMEOUT,

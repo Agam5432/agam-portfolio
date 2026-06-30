@@ -1,13 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation
-} from 'react-router-dom'
-
-import { useEffect, useRef } from 'react'
-import axios from 'axios'
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -30,41 +22,6 @@ function AppWrapper() {
 function App() {
   const location = useLocation()
 
-  // 🔥 HARD GUARD (prevents duplicate API calls — handles both StrictMode
-  // double-invoke AND fast route changes firing the timer twice)
-  const lastTrackedPage = useRef("");
-  const inFlight = useRef(false);
-
-  useEffect(() => {
-    const page = location.pathname;
-
-    // 🚫 BLOCK duplicate calls — already tracked this exact page, or a
-    // request for some page is currently in flight
-    if (lastTrackedPage.current === page || inFlight.current) return;
-
-    const timer = setTimeout(async () => {
-      // double-check inside the timeout too, in case state changed
-      // while we were waiting (StrictMode can re-run effects)
-      if (lastTrackedPage.current === page || inFlight.current) return;
-
-      inFlight.current = true;
-      lastTrackedPage.current = page;
-
-      try {
-        await axios.post("/api/analytics/track-visit", { page });
-      } catch (err) {
-        console.error("track-visit failed", err);
-        // allow retry on next route change if this one failed
-        lastTrackedPage.current = "";
-      } finally {
-        inFlight.current = false;
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
-
-  }, [location.pathname]);
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] font-inter">
       <Navbar />
@@ -72,7 +29,6 @@ function App() {
       <main className="pt-16">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
