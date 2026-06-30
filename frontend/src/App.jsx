@@ -1,4 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect } from "react";
+import axios from 'axios';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
 import Navbar from './components/Navbar'
@@ -21,7 +23,21 @@ function AppWrapper() {
 
 function App() {
   const location = useLocation()
+useEffect(() => {
+  const page = location.pathname;
 
+  const lastPage = sessionStorage.getItem("lastTrackedPage");
+
+  // 🚫 prevent duplicate calls
+  if (lastPage === page) return;
+
+  sessionStorage.setItem("lastTrackedPage", page);
+
+  axios.post("/api/analytics/track-visit", {
+    page
+  });
+
+}, [location.pathname]);
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] font-inter">
       <Navbar />
