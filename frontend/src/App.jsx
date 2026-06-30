@@ -30,21 +30,35 @@ function AppWrapper() {
 function App() {
   const location = useLocation()
 
-  // 🔥 HARD GUARD (prevents duplicate API calls)
+  // 🔥 HARD GUARD (prevents duplicate API calls — handles both StrictMode
+  // double-invoke AND fast route changes firing the timer twice)
   const lastTrackedPage = useRef("");
+  const inFlight = useRef(false);
 
   useEffect(() => {
     const page = location.pathname;
 
-    // 🚫 BLOCK duplicate calls
-    if (lastTrackedPage.current === page) return;
+    // 🚫 BLOCK duplicate calls — already tracked this exact page, or a
+    // request for some page is currently in flight
+    if (lastTrackedPage.current === page || inFlight.current) return;
 
-    lastTrackedPage.current = page;
+    const timer = setTimeout(async () => {
+      // double-check inside the timeout too, in case state changed
+      // while we were waiting (StrictMode can re-run effects)
+      if (lastTrackedPage.current === page || inFlight.current) return;
 
-    const timer = setTimeout(() => {
-      axios.post("/api/analytics/track-visit", {
-        page
-      });
+      inFlight.current = true;
+      lastTrackedPage.current = page;
+
+      try {
+        await axios.post("/api/analytics/track-visit", { page });
+      } catch (err) {
+        console.error("track-visit failed", err);
+        // allow retry on next route change if this one failed
+        lastTrackedPage.current = "";
+      } finally {
+        inFlight.current = false;
+      }
     }, 300);
 
     return () => clearTimeout(timer);

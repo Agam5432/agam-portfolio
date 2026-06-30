@@ -116,30 +116,37 @@ const trackVisitorpage = async (req, res) => {
   try {
     const { page } = req.body;
     const visitorId = req.cookies.visitorId;
-
-    console.log("Visited Page:", page);
-
-    await Visitor.findOneAndUpdate(
-  { visitorId },
-  {
-    $inc: { visitCount: 1 },
-
-    $set: {
-      currentPage: page,
-      lastVisit: new Date()
-    },
-
-    $addToSet: {
-      pages: page
+ 
+    // If there's no visitorId cookie yet, the trackVisitor middleware hasn't
+    // run/assigned one for some reason — bail out instead of creating a
+    // phantom "visitorId: undefined" document.
+    if (!visitorId) {
+      return res.status(200).json({ success: false, reason: "no visitorId cookie" });
     }
-  },
-  { upsert: true, new: true }
-);
-
+ 
+    await Visitor.findOneAndUpdate(
+      { visitorId },
+      {
+        $inc: { visitCount: 1 },
+        $set: {
+          currentPage: page,
+          lastVisit: new Date(),
+          browser: req.headers["user-agent"] || "",
+          referrer: req.headers["referer"] || "",
+        },
+        $addToSet: {
+          pages: page
+        }
+      },
+      { upsert: false, new: true }
+      // upsert is now FALSE — the visitor document should already exist,
+      // created by trackVisitor middleware on this same request cycle.
+    );
+ 
     res.status(200).json({
       success: true
     });
-
+ 
   } catch (error) {
     console.log(error);
     res.status(500).json({ success: false });
