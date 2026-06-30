@@ -23,7 +23,7 @@ const VisitorSchema = new mongoose.Schema({
 
   sessionCount: {          // 🔥 ADD THIS
     type: Number,
-    default: 1
+    default: 0
   },
 
   lastVisit: {
