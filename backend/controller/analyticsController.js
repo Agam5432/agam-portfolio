@@ -112,7 +112,42 @@ const markResumeDownload = async (req, res) => {
   }
 };
 
+const trackVisitorpage = async (req, res) => {
+  try {
+    const { page } = req.body;
+    const visitorId = req.cookies.visitorId;
+
+    console.log("Visited Page:", page);
+
+    await Visitor.findOneAndUpdate(
+  { visitorId },
+  {
+    $inc: { visitCount: 1 },
+
+    $set: {
+      currentPage: page,
+      lastVisit: new Date()
+    },
+
+    $addToSet: {
+      pages: page
+    }
+  },
+  { upsert: true, new: true }
+);
+
+    res.status(200).json({
+      success: true
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false });
+  }
+};
+
 module.exports = {
+  trackVisitorpage,
   getAllVisitors,
   getUniqueVisitors,
   getTodayVisitors,

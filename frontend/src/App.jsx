@@ -1,5 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation
+} from 'react-router-dom'
+
+import { useEffect, useRef } from 'react'
+import axios from 'axios'
 
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -22,6 +30,27 @@ function AppWrapper() {
 function App() {
   const location = useLocation()
 
+  // 🔥 HARD GUARD (prevents duplicate API calls)
+  const lastTrackedPage = useRef("");
+
+  useEffect(() => {
+    const page = location.pathname;
+
+    // 🚫 BLOCK duplicate calls
+    if (lastTrackedPage.current === page) return;
+
+    lastTrackedPage.current = page;
+
+    const timer = setTimeout(() => {
+      axios.post("/api/analytics/track-visit", {
+        page
+      });
+    }, 300);
+
+    return () => clearTimeout(timer);
+
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] font-inter">
       <Navbar />
@@ -29,6 +58,7 @@ function App() {
       <main className="pt-16">
         <AnimatePresence mode="wait">
           <motion.div
+            key={location.pathname}
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
