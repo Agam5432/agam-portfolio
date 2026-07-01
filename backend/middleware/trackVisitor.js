@@ -3,14 +3,24 @@ const Visitor = require("../models/Visitors");
 
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
-// Routes that should NEVER count as a "visit" — these are admin/dashboard
-// calls, not real portfolio visitors hitting the site.
-const SKIP_PREFIXES = ["/api/analytics", "/api/admin", "/api/nexora"];
+// Admin dashboard calls and analytics READ endpoints must be skipped.
+// BUT /api/analytics/track-visit and /api/analytics/resume-download are
+// real frontend calls — they MUST get cookies, so don't skip them.
+const SKIP_PREFIXES = ["/api/admin", "/api/nexora"];
+const ANALYTICS_ALLOWED = ["/api/analytics/track-visit", "/api/analytics/resume-download"];
 
 const trackVisitor = async (req, res, next) => {
   try {
-    // 🚫 Skip tracking for admin/analytics API calls
-    if (SKIP_PREFIXES.some(prefix => req.originalUrl.startsWith(prefix))) {
+    const url = req.originalUrl;
+
+    // Skip admin/nexora routes entirely
+    if (SKIP_PREFIXES.some(prefix => url.startsWith(prefix))) {
+      return next();
+    }
+
+    // For /api/analytics/* — only allow track-visit and resume-download through.
+    // All other analytics routes (stats, all, etc.) are skipped.
+    if (url.startsWith("/api/analytics") && !ANALYTICS_ALLOWED.some(p => url.startsWith(p))) {
       return next();
     }
 
@@ -45,7 +55,7 @@ const trackVisitor = async (req, res, next) => {
         visitorId,
         sessionId,
         lastVisit: now,
-        visitCount: 1,
+        visitCount: 0,    // track-visit controller will increment this
         sessionCount: 1,
       });
 
@@ -53,44 +63,34 @@ const trackVisitor = async (req, res, next) => {
     } else {
       // ⏱ SESSION CHECK
       const timeDiff = now - new Date(visitor.lastVisit);
-      if (!visitor.sessionCount) {
-        visitor.sessionCount = 1;
-      }
+
+      if (!visitor.sessionCount) visitor.sessionCount = 1;
+
       if (!sessionId || timeDiff > SESSION_TIMEOUT) {
         sessionId = uuidv4();
         isNewSession = true;
-
         visitor.sessionCount = (visitor.sessionCount || 0) + 1;
       }
-      
-  }
-      // 🍪 update session cookie
-      res.cookie("sessionId", sessionId, {
-        maxAge: SESSION_TIMEOUT,
-        httpOnly: true,
-        sameSite: "none",
-        secure: true
-      });
-    
+    }
 
-    // 📊 UPDATE COMMON DATA
+    // 🍪 update session cookie
+    res.cookie("sessionId", sessionId, {
+      maxAge: SESSION_TIMEOUT,
+      httpOnly: true,
+      sameSite: "none",
+      secure: true
+    });
+
+    // 📊 Only update identity fields here.
+    // browser / referrer / currentPage / visitCount are handled SOLELY
+    // by the track-visit controller — NOT here — so that /api/education,
+    // /api/profile etc. don't overwrite the real page URL.
     visitor.sessionId = sessionId;
     visitor.lastVisit = now;
 
-    // 🌐 optional tracking (if you pass from frontend)
-    visitor.browser = req.headers["user-agent"] || "";
-    visitor.referrer = req.headers["referer"] || "";
-    visitor.currentPage = req.originalUrl;
-
     await visitor.save();
 
-    // (optional debug)
-    req.analytics = {
-      isNewVisitor,
-      isNewSession,
-      visitorId,
-      sessionId,
-    };
+    req.analytics = { isNewVisitor, isNewSession, visitorId, sessionId };
 
     next();
   } catch (err) {
