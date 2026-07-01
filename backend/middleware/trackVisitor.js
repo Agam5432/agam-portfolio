@@ -12,6 +12,7 @@ const ANALYTICS_ALLOWED = ["/api/analytics/track-visit", "/api/analytics/resume-
 const trackVisitor = async (req, res, next) => {
   try {
     const url = req.originalUrl;
+    const userAgent = req.headers["user-agent"] || "";
 
     // Skip admin/nexora routes entirely
     if (SKIP_PREFIXES.some(prefix => url.startsWith(prefix))) {
@@ -19,8 +20,13 @@ const trackVisitor = async (req, res, next) => {
     }
 
     // For /api/analytics/* — only allow track-visit and resume-download through.
-    // All other analytics routes (stats, all, etc.) are skipped.
     if (url.startsWith("/api/analytics") && !ANALYTICS_ALLOWED.some(p => url.startsWith(p))) {
+      return next();
+    }
+
+    // 🚫 Skip health checks, bots, and requests with no real browser user-agent
+    // (Render health checks, uptime monitors, crawlers, etc.)
+    if (!userAgent || userAgent.length < 20) {
       return next();
     }
 
