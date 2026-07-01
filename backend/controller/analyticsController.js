@@ -115,7 +115,7 @@ const markResumeDownload = async (req, res) => {
 const trackVisitorpage = async (req, res) => {
   try {
     const { page } = req.body;
-    const visitorId = req.cookies.visitorId;
+    const visitorId = req.analytics?.visitorId;
 
     if (!visitorId) {
       return res.status(200).json({

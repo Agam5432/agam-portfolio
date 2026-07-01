@@ -94,7 +94,7 @@ export default function VisitorsPage({ token, setTab, visitorFilter }) {
                           ? <span className="flex items-center gap-1" style={{ color: '#10b981' }}><Download size={12} /> Yes</span>
                           : <span style={{ color: '#888899' }}>No</span>}
                       </td>
-                      <td className="px-4 py-3" style={{ color: '#2a2a3a' }}>
+                      <td className="px-4 py-3" style={{ color: '#e0e0eb' }}>
                         {v.lastVisit ? new Date(v.lastVisit).toLocaleString() : '—'}
                       </td>
                     </motion.tr>
