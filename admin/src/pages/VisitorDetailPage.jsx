@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Monitor, Smartphone, Download, Globe, Clock, BarChart2 } from 'lucide-react'
-import { api } from './shared'
+import { api } from './Shared'
 
 export default function VisitorDetailPage({ token, setTab, visitorId }) {
   const [visitor, setVisitor] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!visitorId) return
+    if (!visitorId) returngit
     api(token).get(`/api/analytics/visitor/${visitorId}`)
       .then(r => setVisitor(r.data))
       .catch(err => console.error('Failed to load visitor detail', err))
