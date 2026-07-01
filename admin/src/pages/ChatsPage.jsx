@@ -27,7 +27,7 @@ export default function ChatsPage({ token }) {
                   <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(108,99,255,0.1)', color: '#6c63ff', border: '1px solid rgba(108,99,255,0.2)' }}>Nexora</span>
                   <p className="text-sm" style={{ color: '#888899' }}>{c.botReply}</p>
                 </div>
-                <p className="text-xs mt-2" style={{ color: '#2a2a3a' }}>{new Date(c.createdAt).toLocaleString()}</p>
+                <p className="text-xs mt-2" style={{ color: '#d0d0e4' }}>{new Date(c.createdAt).toLocaleString()}</p>
               </motion.div>
             ))}
           </div>

@@ -31,7 +31,7 @@ export default function MessagesPage({ token }) {
                       <p className="text-xs" style={{ color: '#00d4ff' }}>{c.email}</p>
                     </div>
                     <p className="text-sm leading-relaxed" style={{ color: '#888899' }}>{c.message}</p>
-                    <p className="text-xs mt-2" style={{ color: '#2a2a3a' }}>{new Date(c.createdAt).toLocaleString()}</p>
+                    <p className="text-xs mt-2" style={{ color: '#d7d7e1' }}>{new Date(c.createdAt).toLocaleString()}</p>
                   </div>
                   <button onClick={() => deleteContact(c._id)} className="p-1.5 rounded-lg shrink-0" style={{ color: '#ef4444' }}>
                     <Trash2 size={14} />
