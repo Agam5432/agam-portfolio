@@ -1,7 +1,8 @@
 const Visitor = require("../models/Visitors");
 
 const getUniqueVisitors = async (req, res) => {
-  try {
+
+   try {
     const count = await Visitor.countDocuments();
     res.json({ uniqueVisitors: count });
   } catch (err) {
@@ -10,78 +11,102 @@ const getUniqueVisitors = async (req, res) => {
 };
 
 const getTodayVisitors = async (req, res) => {
-  try {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const visitors = await Visitor.find({ lastVisit: { $gte: start } });
-    res.json({ todayVisitors: visitors.length });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    try {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+
+        const visitors = await Visitor.find({
+        lastVisit: { $gte: start }
+        });
+
+        res.json({
+        todayVisitors: visitors.length
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 const getTotalSessions = async (req, res) => {
-  try {
+try {
     const data = await Visitor.aggregate([
-      { $group: { _id: null, totalSessions: { $sum: "$sessionCount" } } }
+      {
+        $group: {
+          _id: null,
+          totalSessions: { $sum: "$sessionCount" }
+        }
+      }
     ]);
-    res.json({ totalSessions: data[0]?.totalSessions || 0 });
+
+    res.json({
+      totalSessions: data[0]?.totalSessions || 0
+    });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
 const getPageViews = async (req, res) => {
-  try {
-    const data = await Visitor.aggregate([
-      { $group: { _id: null, totalViews: { $sum: "$visitCount" } } }
-    ]);
-    res.json({ totalPageViews: data[0]?.totalViews || 0 });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    try {
+        const data = await Visitor.aggregate([
+        {
+            $group: {
+            _id: null,
+            totalViews: { $sum: "$visitCount" }
+            }
+        }
+        ]);
+
+        res.json({
+        totalPageViews: data[0]?.totalViews || 0
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 const getResumeDownloads = async (req, res) => {
-  try {
-    const count = await Visitor.countDocuments({ resumeDownloaded: true });
-    res.json({ resumeDownloads: count });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    try {
+        const count = await Visitor.countDocuments({
+        resumeDownloaded: true
+        });
+
+        res.json({
+        resumeDownloads: count
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 const getAllVisitors = async (req, res) => {
   try {
     const visitors = await Visitor.find()
-      .sort({ lastVisit: -1 })
-      .limit(200);
+      .sort({ lastVisit: -1 })   // most recent first
+      .limit(200);               // adjust/remove limit as needed
+ 
     res.json(visitors);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 const markResumeDownload = async (req, res) => {
   try {
     const visitorId = req.cookies.visitorId;
     if (!visitorId) {
       return res.status(200).json({ ok: false, reason: "no visitorId cookie" });
     }
-    await Visitor.findOneAndUpdate({ visitorId }, { resumeDownloaded: true });
+ 
+    await Visitor.findOneAndUpdate(
+      { visitorId },
+      { resumeDownloaded: true }
+    );
+ 
     res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// 🆕 Get single visitor's full detail (for detail page)
-const getVisitorDetail = async (req, res) => {
-  try {
-    const { visitorId } = req.params;
-    const visitor = await Visitor.findOne({ visitorId });
-    if (!visitor) return res.status(404).json({ error: "Visitor not found" });
-    res.json(visitor);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -93,67 +118,45 @@ const trackVisitorpage = async (req, res) => {
     const visitorId = req.analytics?.visitorId;
 
     if (!visitorId) {
-      return res.status(200).json({ success: false, reason: "no visitorId" });
+      return res.status(200).json({
+        success: false,
+        reason: "no visitorId cookie"
+      });
     }
 
-    const now = new Date();
-
-    // Check if this page already exists in history
-    const visitor = await Visitor.findOne({ visitorId });
-
-    if (!visitor) {
-      return res.status(200).json({ success: false, reason: "visitor not found" });
-    }
-
-    const existingPage = visitor.pages?.find(p => p.page === page);
-
-    if (existingPage) {
-      // Page already visited before — increment count + update lastVisit
-      await Visitor.findOneAndUpdate(
-        { visitorId, "pages.page": page },
-        {
-          $set: {
-            currentPage: page,
-            lastVisit: now,
-            browser: req.headers["user-agent"] || "",
-            referrer: req.headers["referer"] || "",
-            "pages.$.count": existingPage.count + 1,
-            "pages.$.lastVisit": now,
-          },
-          $inc: { visitCount: 1 }
+    // 🔥 PAGE VIEW TRACKING (ONE PAGE = ONE COUNT)
+    await Visitor.findOneAndUpdate(
+      { visitorId },
+      {
+        $set: {
+          currentPage: page,
+          lastVisit: new Date(),
+          browser: req.headers["user-agent"] || "",
+          referrer: req.headers["referer"] || ""
         },
-        { new: true }
-      );
-    } else {
-      // First time visiting this page — add new entry to pages array
-      await Visitor.findOneAndUpdate(
-        { visitorId },
-        {
-          $set: {
-            currentPage: page,
-            lastVisit: now,
-            browser: req.headers["user-agent"] || "",
-            referrer: req.headers["referer"] || "",
-          },
-          $inc: { visitCount: 1 },
-          $push: {
-            pages: {
-              page,
-              count: 1,
-              firstVisit: now,
-              lastVisit: now,
-            }
-          }
-        },
-        { new: true }
-      );
-    }
 
-    return res.status(200).json({ success: true });
+        // 👇 page history (Contact, Skills, etc. all included)
+        $addToSet: {
+          pages: page
+        },
+
+        // 👇 TOTAL PAGE VIEWS (IMPORTANT)
+        $inc: {
+          visitCount: 1
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({
+      success: true
+    });
 
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ success: false });
+    return res.status(500).json({
+      success: false
+    });
   }
 };
 
@@ -165,6 +168,5 @@ module.exports = {
   getTotalSessions,
   getPageViews,
   getResumeDownloads,
-  markResumeDownload,
-  getVisitorDetail,  // 🆕
+  markResumeDownload
 };

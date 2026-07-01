@@ -30,7 +30,7 @@ function applyFilter(visitors, filterType) {
   }
 }
 
-export default function VisitorsPage({ token, setTab, visitorFilter, setVisitorId }) {
+export default function VisitorsPage({ token, setTab, visitorFilter }) {
   const [visitors, setVisitors] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -76,14 +76,8 @@ export default function VisitorsPage({ token, setTab, visitorFilter, setVisitorI
                 </thead>
                 <tbody>
                   {filtered.map((v, i) => (
-                    <motion.tr key={v._id}
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                      onClick={() => setVisitorId(v.visitorId)}
-                      style={{ borderBottom: '1px solid #2a2a3a', cursor: 'pointer' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.05)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                      title="Click to view detail"
-                    >
+                    <motion.tr key={v._id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                      style={{ borderBottom: '1px solid #2a2a3a' }}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {v.device === 'mobile' ? <Smartphone size={14} style={{ color: '#00d4ff' }} /> : <Monitor size={14} style={{ color: '#00d4ff' }} />}
@@ -100,7 +94,7 @@ export default function VisitorsPage({ token, setTab, visitorFilter, setVisitorI
                           ? <span className="flex items-center gap-1" style={{ color: '#10b981' }}><Download size={12} /> Yes</span>
                           : <span style={{ color: '#888899' }}>No</span>}
                       </td>
-                      <td className="px-4 py-3" style={{ color: '#d0d0d7' }}>
+                      <td className="px-4 py-3" style={{ color: '#e0e0eb' }}>
                         {v.lastVisit ? new Date(v.lastVisit).toLocaleString() : '—'}
                       </td>
                     </motion.tr>

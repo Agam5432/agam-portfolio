@@ -1,16 +1,9 @@
 const mongoose = require("mongoose");
 
-const PageVisitSchema = new mongoose.Schema({
-  page: { type: String, required: true },
-  count: { type: Number, default: 1 },
-  firstVisit: { type: Date, default: Date.now },
-  lastVisit: { type: Date, default: Date.now }
-}, { _id: false });
-
 const VisitorSchema = new mongoose.Schema({
 
   visitorId: {
-    type: String,
+    type: String,   // 🔥 ADD THIS (VERY IMPORTANT)
     index: true
   },
 
@@ -28,7 +21,7 @@ const VisitorSchema = new mongoose.Schema({
     default: 0
   },
 
-  sessionCount: {
+  sessionCount: {          // 🔥 ADD THIS
     type: Number,
     default: 0
   },
@@ -41,18 +34,6 @@ const VisitorSchema = new mongoose.Schema({
   resumeDownloaded: {
     type: Boolean,
     default: false
-  },
-
-  // 🆕 Page history — har page ka count aur timestamps
-  pages: {
-    type: [PageVisitSchema],
-    default: []
-  },
-
-  // 🆕 Pehli baar kab aaya
-  firstVisit: {
-    type: Date,
-    default: Date.now
   }
 
 });
