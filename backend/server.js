@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
-const trackVisitor = require("./middleware/trackVisitor");
 const analyticsRoutes = require("./routes/analytics");
 require("dotenv").config();
 
@@ -21,7 +20,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(trackVisitor);
 // Rate limiter for Nexora
 const nexoraLimiter = rateLimit({
   windowMs: 60 * 1000,

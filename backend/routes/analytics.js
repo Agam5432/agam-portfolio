@@ -11,6 +11,7 @@ const {
   markResumeDownload,
   trackVisitorpage
 } = require("../controller/analyticsController");
+const trackVisitor = require("../middleware/trackVisitor");
 
 router.get("/unique-visitors", getUniqueVisitors); // total users
 router.get("/today-visitors", getTodayVisitors); // today active users
@@ -18,8 +19,9 @@ router.get("/total-sessions", getTotalSessions); // total sessions
 router.get("/page-views", getPageViews); // total activity
 router.get("/resume-downloads", getResumeDownloads); // resume clicks
 router.get("/all", getAllVisitors); // all visitors
-router.post("/track-visit", trackVisitorpage);
-router.post("/resume-download", markResumeDownload); // marks current visitor as having downloaded resume
+// BAAD MEIN:
+router.post("/track-visit", trackVisitor, trackVisitorpage);
+router.post("/resume-download", trackVisitor, markResumeDownload); // marks current visitor as having downloaded resume
 
 
 module.exports = router;
