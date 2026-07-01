@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 
@@ -15,6 +16,11 @@ export default function App() {
     setToken(t)
   }
 
-  if (!token) return <Login onLogin={onLogin} />
-  return <Dashboard token={token} logout={logout} />
+  return (
+    <BrowserRouter>
+      {!token
+        ? <Login onLogin={onLogin} />
+        : <Dashboard token={token} logout={logout} />}
+    </BrowserRouter>
+  )
 }
