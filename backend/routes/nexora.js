@@ -1,214 +1,293 @@
 const express = require("express");
 const router = express.Router();
+
 const Groq = require("groq-sdk");
+
 const ChatMessage = require("../models/ChatMessage");
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const MODEL = "llama-3.3-70b-versatile";
+const { retrieve } = require("../services/rag");
+const { detectInterest } = require("../services/leadDetector");
+const { generateDraft } = require("../services/leadDraftGenerator");
+const { sendLeadEmail } = require("../services/emailService");
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+const MODEL = "llama-3.1-8b-instant";
 
 // ============================================================
-// AGAM'S COMPLETE PORTFOLIO DATA — Nexora's Knowledge Base
+// NEXORA SYSTEM PROMPT — RAG VERSION (dynamic, rebuilt per request)
 // ============================================================
-const AGAM_DATA = `
-ABOUT AGAM TYAGI:
-- Full name: Agam Tyagi
-- Role: Full Stack Developer & AI Integration Engineer
-- Email: agamtyagi2001@gmail.com
-- Phone: +91 82181 85432
-- Location: Chandigarh, India
-- Currently working at: Backup Infotech (Jul 2024 – Present)
-- Experience: 2+ years
 
-EDUCATION:
-- Master of Computer Applications (MCA) — Chandigarh University (Jul 2022 – Jun 2024)
-- Bachelor of Computer Applications (BCA) — Ch. Charan Singh University (Jul 2019 – Jun 2022)
+function buildSystemPrompt(context) {
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
-TECHNICAL SKILLS:
-- Languages: PHP, JavaScript (ES6+), Python
-- Frontend: HTML5, CSS3, Bootstrap, Tailwind CSS, jQuery, AJAX, React.js
-- Backend: Node.js, Express.js, Laravel, FastAPI, RESTful API Development, MVC Architecture
-- Databases: MySQL, MongoDB, PostgreSQL, Prisma ORM, Mongoose, SQLite
-- AI/ML: OpenCV, DeepFace, MediaPipe, EasyOCR, PaddleOCR, LLM Integration, Groq API, Ollama
-- Auth & Security: JWT, Session Auth, Role-Based Access Control (RBAC), Liveness Detection, Anti-Spoofing
-- Tools: Git, GitHub, Postman, Axios, Multer, VS Code, Prisma Studio
+  return `
+You are Nexora — Agam Tyagi's personal AI portfolio assistant. You represent Agam to recruiters, collaborators, and visitors, so you should sound confident and knowledgeable about him, not hesitant.
 
-WORK EXPERIENCE:
-1. Full Stack Developer — Backup Infotech (Jul 2024 – Present)
-   - Designed and deployed 5+ production-grade full-stack web applications using PHP, Laravel, Node.js, Express.js, and MySQL
-   - Features: role-based authentication, Razorpay/Stripe payment integration, dynamic dashboards, advanced search & filter modules
-   - Built and documented 10+ RESTful APIs consumed by web and mobile clients
-   - Implemented JWT-based authentication with RBAC and granular permission handling
-   - Optimised complex SQL queries and indexing strategies
-   - Followed MVC architecture with Git-based workflows
+TODAY'S DATE: ${today}
 
-PROJECTS:
-1. AI Face Authentication & Liveness Detection System (Dec 2025 – Apr 2026)
-   - Tech Stack: Node.js, Express.js, FastAPI, PostgreSQL, Prisma, DeepFace, MediaPipe
-   - Built biometric authentication with real-time liveness detection (blink & head-movement verification)
-   - Prevents replay and spoofing attacks using MediaPipe
-   - Integrated DeepFace for 128-dimension face embedding generation with cosine similarity matching
-   - Secure RESTful APIs and PostgreSQL storage via Prisma ORM
+YOUR ROLE:
+Answer questions about Agam Tyagi using ONLY the portfolio context provided below. Within that context, you should reason and calculate freely — you are not just a search engine, you are an assistant who understands the context.
 
-2. Aashi Rainwear — E-Commerce Platform (Aug 2025 – Dec 2025)
-   - Tech Stack: Flutter, PHP, Node.js, HTML5, CSS3, Bootstrap, JavaScript, MySQL
-   - Cross-platform Flutter e-commerce app with product catalogue, cart management, order tracking, and payment processing
-   - Responsive admin and customer-facing web interface
-   - Inventory management and dynamic product filtering
+WHAT YOU CAN TALK ABOUT:
+- Skills, projects, experience, education, work history, availability, contact info
+- Nexora itself (this chatbot), since it is one of Agam's projects
 
-3. Nexora AI Assistant (Personal Project)
-   - Tech Stack: Python, Gradio, Groq API, Ollama, Tavily Search API
-   - AI-powered conversational assistant with intelligent query routing
-   - Multi-model LLM support (Groq + Ollama)
-   - Real-time web search via Tavily Search API
-   - Multilingual response handling (English, Hinglish, Hindi)
-   - Custom Gradio UI with streaming output
+HOW TO REASON (do this actively, don't hedge):
+1. DATES & DURATION: If context gives a period like a date range, calculate the duration yourself using TODAY'S DATE above. State it directly and briefly show the reasoning. Never say "not explicitly mentioned" when raw start/end dates are sitting right there in the context — that's on you to compute, not the user.
+2. OWNERSHIP OF PROJECTS: Every project listed in the context is something Agam has actually built. Don't hedge about whether a project was "professional or personal" unless the context explicitly distinguishes this — treat listed projects as his real work by default.
+3. COMBINING FACTS: If an answer requires connecting two pieces of context (e.g. "what AI tools does he know" = Skills section + tech stacks mentioned inside individual projects), do that combination yourself rather than saying the info isn't available.
+4. TOTAL EXPERIENCE CALCULATION: When asked about Agam's total experience, look at every entry under "Experience" in the context. For each entry, take its start date from the "Period" field, and its end date (use TODAY'S DATE above if the period says "Present"). Calculate the duration for each entry accordingly. If there are multiple experience entries, add up their durations to get the total combined experience, avoiding double-counting if any periods overlap. State the final total clearly with a brief line showing your reasoning.
+5. LATEST / FIRST: Projects are listed with a "Listing order" number — lower number means more recent/prominent (order 1 = latest). Use this to answer "latest project," "most recent project," "first project," etc.
 
-4. AI Resume Parser (Personal Project)
-   - Tech Stack: Node.js, Express.js, FastAPI, Python, PDF Parser
-   - Automated resume parsing supporting PDF and DOCX uploads
-   - Extracts: skills, experience, education, contact details into structured JSON
-   - RESTful API endpoints for upload, parse, and export workflows
-   - Multi-format support with robust error handling
+CONTACT QUESTION RULE:
+When the user asks a general contact question (e.g. "how can I contact him", "what's his email", "how do I reach Agam"), respond with ONLY email, phone, and LinkedIn — do NOT include the GitHub link in this response, even though it's present in the context.
+Only mention GitHub if the user specifically asks about it (e.g. "what's his GitHub", "does he have a GitHub profile", "show me his repos").
 
-5. Google Photos-Style Face Grouping System (Personal Project)
-   - Tech Stack: Express.js, PostgreSQL, Prisma, DeepFace
-   - Automatic face detection and grouping engine using DeepFace similarity matching
-   - Face embedding clustering to identify individuals across photo collections
-   - Smart album generation organized by individual identity
+AVAILABILITY RULE:
+Agam is currently open to hire — available for onsite, office-based, and remote opportunities. If asked whether he is available to hire, open to work, or available for onsite/office/remote roles, give a complete answer that confirms he is available AND explicitly mentions he is open to onsite, office-based, and remote work — do not answer with just "Yes" alone.
 
-6. OCR Document Extraction System (Personal Project)
-   - Tech Stack: FastAPI, OpenCV, EasyOCR, PaddleOCR
-   - High-accuracy OCR pipeline for scanned documents, ID cards, and invoices
-   - Dual OCR engines (EasyOCR + PaddleOCR) for better accuracy
-   - OpenCV preprocessing: deskewing and noise removal
+WHAT YOU MUST NOT DO:
+- Do not invent facts, numbers, companies, dates, or contact methods that aren't in the context or directly derivable from it.
+- If specific information (like an email, phone number, or contact method) is genuinely not in the context, say so plainly. Do NOT invent workarounds, alternate contact methods, or plausible-sounding suggestions that aren't explicitly in the context.
+- If user asks unrelated things like weather, general knowledge, math, coding help unrelated to Agam's work, jokes, or questions about other people — politely refuse:
+  "I'm Nexora, Agam's personal portfolio assistant. I can only answer questions about Agam's skills, projects, and experience."
+- Only say "I couldn't find that information in Agam's portfolio" when the answer truly cannot be found OR reasonably derived from the context — not when it just needs basic math or connecting related facts.
 
-7. Radigone Web App (Dec 2024 – Jun 2025)
-   - Tech Stack: PHP, Laravel, HTML/CSS, JavaScript, MySQL
-   - Multi-role platform (viewers, sponsors, agents)
-   - Fine-grained RBAC, permission management, transaction handling
-   - Automated commission calculation
-   - Comprehensive admin panel for user management and reporting
+ANSWER STYLE:
+- Friendly, professional, confident — you know Agam's work well
+- Short and clear, no unnecessary hedging or disclaimers
+- Reply in the same language style as the user (English, Hindi, or Hinglish)
+- When you calculate something (like years of experience), briefly show your reasoning in one line
 
-8. Online Examination System (Aug 2024 – Sep 2024)
-   - Tech Stack: HTML5, CSS3, Bootstrap, JavaScript, jQuery, AJAX, PHP, Laravel, MySQL
-   - Secure full-featured online exam platform with timed tests
-   - Automatic grading, result analytics
-   - Robust admin panel for exam and question bank management
-   - Export functionality for performance reports
-
-WHAT MAKES AGAM UNIQUE:
-- Combines Full Stack development with real AI/ML integration (not just API calls)
-- Has worked with computer vision (DeepFace, MediaPipe, OpenCV), LLMs, and OCR in production
-- Built Nexora — a multilingual AI assistant (that's me!)
-- Cross-platform experience: web, mobile (Flutter), and AI systems
-- Production deployments with real clients
-- Payment integration experience (Razorpay + Stripe)
-- Strong security knowledge (biometric auth, JWT, RBAC, anti-spoofing)
-
-AVAILABILITY:
-- Open to full-time roles, freelance projects, and collaborations
-- Contact: agamtyagi2001@gmail.com | +91 82181 85432
-`;
+PORTFOLIO CONTEXT:
+${context}
+`.trim();
+}
 
 // ============================================================
-// NEXORA SYSTEM PROMPT — Portfolio Only
+// HELPERS — lead capture flow
 // ============================================================
-const NEXORA_SYSTEM = `
-You are Nexora — Agam Tyagi's personal AI portfolio assistant.
 
-YOUR ONLY JOB:
-Answer questions about Agam Tyagi — his skills, projects, experience, education, and availability.
+function isAffirmative(text) {
+  return /^(yes|yeah|yep|sure|ok|okay|haan|bilkul|theek hai|krdo|kar do)\b/i.test(text.trim());
+}
 
-STRICT RULES:
-1. ONLY answer questions about Agam Tyagi and his portfolio.
-2. If anyone asks ANYTHING outside of Agam's portfolio (weather, news, math, general knowledge, coding help, etc.) — politely refuse and redirect them to ask about Agam.
-3. Never pretend you can do general tasks.
-4. Never answer general knowledge questions.
-5. Never do math, coding help, or unrelated tasks.
+function isNegative(text) {
+  return /^(no|nah|nope|nahi|mat karo|skip)\b/i.test(text.trim());
+}
 
-HOW TO HANDLE OFF-TOPIC:
-- Say something like: "I'm Nexora, Agam's personal assistant. I can only answer questions about Agam's skills, projects, and experience. Want to know something about him?"
-- Be friendly but firm.
-- Suggest what they CAN ask: skills, projects, experience, availability, contact info.
-
-PERSONALITY:
-- Friendly, confident, professional
-- Proud of Agam's work — speak positively
-- Short and crisp answers unless detailed answer is needed
-- Reply in the same language as the user (English, Hinglish, or Hindi)
-
-AGAM'S COMPLETE DATA:
-${AGAM_DATA}
-
-EXAMPLES OF WHAT YOU ANSWER:
-✅ "What are Agam's skills?"
-✅ "Tell me about his AI projects"
-✅ "Is he available for hire?"
-✅ "What tech stack does he use?"
-✅ "How much experience does he have?"
-✅ "Tell me about Nexora project"
-✅ "What is his education?"
-✅ "How can I contact Agam?"
-
-EXAMPLES OF WHAT YOU REFUSE:
-❌ "What is the weather today?"
-❌ "Solve this math problem"
-❌ "Who is the president of India?"
-❌ "Write me a Python script"
-❌ "Tell me a joke"
-
-If user asks who created you: "I was created by Agam Tyagi as part of his portfolio."
-`;
+async function extractName(rawText) {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.1-8b-instant",
+    messages: [{
+      role: "user",
+      content: `Extract just the person's name from this message. Respond with ONLY the name, nothing else.\n\nMessage: "${rawText}"`
+    }],
+    max_tokens: 15,
+    temperature: 0,
+  });
+  return response.choices[0]?.message?.content?.trim() || rawText;
+}
 
 // ============================================================
-// CHAT ROUTE
+// CHAT API
 // ============================================================
+
 router.post("/chat", async (req, res) => {
   try {
-    const { message, history = [] } = req.body;
+    const {
+      message,
+      history = [],
+      leadState = { stage: "idle" },
+    } = req.body;
 
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: "Message is required" });
+    const trimmedMessage = message?.trim();
+
+    if (!trimmedMessage) {
+      return res.status(400).json({
+        error: "Message is required",
+      });
     }
 
-    // Build messages array
-    const messages = [{ role: "system", content: NEXORA_SYSTEM }];
+    let newLeadState = { ...leadState };
+    let reply;
 
-    // Add last 6 messages from history
+    // ============================================================
+    // LEAD CAPTURE STATE MACHINE
+    // ============================================================
+
+    if (leadState.stage === "awaiting_offer_response") {
+      if (isAffirmative(trimmedMessage)) {
+        newLeadState.stage = "collecting_name";
+        reply = "Great! What's your name?";
+      } else if (isNegative(trimmedMessage)) {
+        newLeadState = { stage: "idle" };
+        reply = "No problem! Let me know if you have any other questions about Agam.";
+      } else {
+        reply = "Just checking — would you like me to send Agam your details? (yes/no)";
+      }
+      return res.json({ success: true, reply, leadState: newLeadState });
+    }
+
+    if (leadState.stage === "collecting_name") {
+      const extractedName = await extractName(trimmedMessage);
+      newLeadState.name = extractedName;
+      newLeadState.stage = "collecting_email";
+      reply = `Nice to meet you, ${extractedName}! What's your email address so Agam can reply?`;
+      return res.json({ success: true, reply, leadState: newLeadState });
+    }
+
+    if (leadState.stage === "collecting_email") {
+      const emailRegex = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+      if (!emailRegex.test(trimmedMessage)) {
+        reply = "That doesn't look like a valid email. Could you re-enter it?";
+        return res.json({ success: true, reply, leadState: newLeadState });
+      }
+      newLeadState.email = trimmedMessage;
+      newLeadState.stage = "collecting_message";
+      reply = "Got it! What would you like to tell Agam? (e.g. the opportunity, project, or role you have in mind)";
+      return res.json({ success: true, reply, leadState: newLeadState });
+    }
+
+    if (leadState.stage === "collecting_message") {
+      newLeadState.rawMessage = trimmedMessage;
+
+      const draft = await generateDraft({
+        name: newLeadState.name,
+        email: newLeadState.email,
+        rawMessage: trimmedMessage,
+        recentHistory: history,
+      });
+
+      newLeadState.draft = draft;
+      newLeadState.stage = "awaiting_confirmation";
+
+      reply = `Here's the draft I'll send to Agam:\n\n"${draft}"\n\nShould I send this as-is? You can say "yes" to send, or tell me what to change.`;
+      return res.json({ success: true, reply, leadState: newLeadState });
+    }
+
+    if (leadState.stage === "awaiting_confirmation") {
+      if (isAffirmative(trimmedMessage)) {
+        await sendLeadEmail({
+          visitorName: newLeadState.name,
+          visitorEmail: newLeadState.email,
+          messageBody: newLeadState.draft,
+        });
+
+        newLeadState = { stage: "sent" };
+        reply = "Done! I've sent your message to Agam. He'll get back to you soon. 🎉";
+      } else if (isNegative(trimmedMessage)) {
+        newLeadState = { stage: "idle" };
+        reply = "No problem, I won't send it. Let me know if you'd like to try again later.";
+      } else {
+        const updatedDraft = await generateDraft({
+          name: newLeadState.name,
+          email: newLeadState.email,
+          rawMessage: `${newLeadState.rawMessage}\n\nUser requested this change: ${trimmedMessage}`,
+          recentHistory: history,
+        });
+        newLeadState.draft = updatedDraft;
+        reply = `Updated draft:\n\n"${updatedDraft}"\n\nShould I send this now?`;
+      }
+      return res.json({ success: true, reply, leadState: newLeadState });
+    }
+
+    // ============================================================
+    // NORMAL RAG FLOW (stage is "idle")
+    // ============================================================
+
+    const context = await retrieve(trimmedMessage);
+
+    const messages = [];
+
+    messages.push({
+      role: "system",
+      content: buildSystemPrompt(context || "No relevant portfolio information found."),
+    });
+
     const recentHistory = history.slice(-6);
-    recentHistory.forEach(msg => {
+
+    recentHistory.forEach((msg) => {
       if (msg.role && msg.content && ["user", "assistant"].includes(msg.role)) {
-        messages.push({ role: msg.role, content: String(msg.content) });
+        messages.push({
+          role: msg.role,
+          content: String(msg.content),
+        });
       }
     });
 
-    messages.push({ role: "user", content: message.trim() });
+    messages.push({
+      role: "user",
+      content: trimmedMessage,
+    });
 
-    // Call Groq
+    // ===========================
+    // GROQ LLM CALL
+    // ===========================
+
     const response = await groq.chat.completions.create({
       model: MODEL,
       messages,
       max_tokens: 500,
-      temperature: 0.5
+      temperature: 0.4,
     });
 
-    const reply = response.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    reply =
+      response.choices[0]?.message?.content ||
+      "Sorry, I couldn't generate a response.";
 
-    // Save to MongoDB (optional logging)
-    try {
-      await ChatMessage.create({ userMessage: message.trim(), botReply: reply });
-    } catch (dbErr) {
-      console.log("DB log error (non-critical):", dbErr.message);
+    // ============================================================
+    // INTEREST DETECTION — only if not already offered this session
+    // ============================================================
+
+    if (leadState.stage === "idle" && !leadState.hasBeenOffered) {
+      const interested = await detectInterest(trimmedMessage, history);
+      if (interested) {
+        reply +=
+          "\n\nBy the way — it sounds like you might be interested in working with Agam. Would you like me to send him your details?";
+        newLeadState.stage = "awaiting_offer_response";
+        newLeadState.hasBeenOffered = true;
+      }
     }
 
-    res.json({ reply });
+    // ===========================
+    // SAVE CHAT LOG
+    // ===========================
 
+    try {
+      await ChatMessage.create({
+        userMessage: trimmedMessage,
+        botReply: reply,
+      });
+    } catch (dbErr) {
+      console.log("DB log error:", dbErr.message);
+    }
+
+    res.json({
+      success: true,
+      reply,
+      context,
+      leadState: newLeadState,
+    });
   } catch (err) {
     console.error("Nexora error:", err);
+
     if (err.status === 429) {
-      return res.status(429).json({ error: "Rate limit reached. Please try again." });
+      return res.status(429).json({
+        error: "Rate limit reached. Please try again.",
+      });
     }
-    res.status(500).json({ error: "Something went wrong. Please try again." });
+
+    res.status(500).json({
+      error: "Something went wrong.",
+    });
   }
 });
 

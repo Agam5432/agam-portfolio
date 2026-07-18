@@ -8,6 +8,8 @@ const profileSchema = new mongoose.Schema({
   tagline: { type: String, default: "Building production-grade web apps with real AI — computer vision, LLMs, and everything in between." },
   badge: { type: String, default: "Open to Opportunities" },
   githubUrl: { type: String, default: "https://github.com" },
+  email: { type: String, default: "example@gmail.com"},
+  phone: { type: String, default: "+91 9876543210" },
   linkedinUrl: { type: String, default: "https://linkedin.com" },
   resumeUrl: { type: String, default: "/Agam_Tyagi_Resume.pdf" },
   stats: [{

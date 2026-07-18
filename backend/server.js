@@ -4,6 +4,7 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const analyticsRoutes = require("./routes/analytics");
+const chatbot = require("./routes/chat");
 require("dotenv").config();
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/contact", require("./routes/contact"));
 app.use("/api/projects", require("./routes/projects"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/chat", chatbot);
 
 // ── NEW DYNAMIC ROUTES ──────────────────────────────────────
 app.use("/api/profile", require("./routes/profile"));

@@ -48,7 +48,7 @@ export default function ProfilePage({ token }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h2 className="text-2xl font-black mb-6">Profile / About</h2>
-      <form onSubmit={submit} className="space-y-4 max-w-2xl">
+      <form onSubmit={submit} className="space-y-4 max-w-3xl">
 
         <div className="p-5 rounded-2xl space-y-3" style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
           <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#6c63ff' }}>Hero Section</p>
@@ -59,6 +59,8 @@ export default function ProfilePage({ token }) {
           <TextArea label="Tagline" name="tagline" value={form.tagline || ''} onChange={handle} rows={2} />
           <Field label="GitHub URL" name="githubUrl" value={form.githubUrl || ''} onChange={handle} placeholder="https://github.com/..." />
           <Field label="LinkedIn URL" name="linkedinUrl" value={form.linkedinUrl || ''} onChange={handle} placeholder="https://linkedin.com/in/..." />
+          <Field label="Contact Number" name="phone" value={form.phone || ''} onChange={handle} placeholder="Eg. +91 9876543210" />
+          <Field label="Email" name="email" value={form.email || ''} onChange={handle} placeholder="example@email.com" />
           <Field label="Resume URL" name="resumeUrl" value={form.resumeUrl || ''} onChange={handle} placeholder="/Agam_Tyagi_Resume.pdf" />
           <div>
             <label className="text-xs mb-1 block" style={{ color: '#888899' }}>Stats (one per line: <code>2+|Years Experience</code>)</label>

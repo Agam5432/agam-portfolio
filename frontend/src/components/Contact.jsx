@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Phone, Github, Linkedin, Send, CheckCircle } from 'lucide-react'
 import axios from 'axios'
@@ -6,7 +6,12 @@ import axios from 'axios'
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
   const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [profile, setProfile] = useState(null)
   const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+
+  useEffect(() => {
+    axios.get('/api/profile').then(r => setProfile(r.data)).catch(() => setProfile(null))
+  }, [])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -20,6 +25,13 @@ export default function Contact() {
       setStatus('error')
     }
   }
+
+  const contactLinks = profile ? [
+    profile.email && { icon: <Mail size={16} />, label: profile.email, href: `mailto:${profile.email}` },
+    profile.phone && { icon: <Phone size={16} />, label: profile.phone, href: `tel:${profile.phone.replace(/\s+/g, '')}` },
+    profile.githubUrl && { icon: <Github size={16} />, label: 'GitHub', href: profile.githubUrl },
+    profile.linkedinUrl && { icon: <Linkedin size={16} />, label: 'LinkedIn', href: profile.linkedinUrl },
+  ].filter(Boolean) : []
 
   return (
     <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
@@ -37,12 +49,7 @@ export default function Contact() {
         {/* Contact Links */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
           className="space-y-4">
-          {[
-            { icon: <Mail size={16} />, label: 'agamtyagi2001@gmail.com', href: 'mailto:agamtyagi2001@gmail.com' },
-            { icon: <Phone size={16} />, label: '+91 82181 85432', href: 'tel:+918218185432' },
-            { icon: <Github size={16} />, label: 'GitHub', href: 'https://github.com/Agam5432' },
-            { icon: <Linkedin size={16} />, label: 'LinkedIn', href: 'https://www.linkedin.com/in/agam-tyagi-6624a7204' },
-          ].map((item, i) => (
+          {contactLinks.map((item, i) => (
             <motion.a key={item.label} href={item.href} target={item.href.startsWith('http') ? '_blank' : '_self'}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.07 }}

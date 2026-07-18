@@ -16,6 +16,7 @@ export default function NexoraChat() {
   const [history, setHistory] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [leadState, setLeadState] = useState({ stage: 'idle' }) // NEW
   const msgsRef = useRef(null)
 
   useEffect(() => {
@@ -36,9 +37,11 @@ export default function NexoraChat() {
     try {
       const res = await axios.post(`/api/nexora/chat`, {
         message: msg,
-        history: history.slice(-6)
+        history: history.slice(-6),
+        leadState
       })
       setHistory(h => [...h, { role: 'assistant', content: res.data.reply }])
+      setLeadState(res.data.leadState || { stage: 'idle' })
     } catch (err) {
       const errMsg = err.response?.status === 429
         ? "Too many messages! Please wait a moment and try again."
