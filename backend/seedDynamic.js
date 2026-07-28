@@ -17,7 +17,7 @@ const skillGroups = [
 
 const experiences = [
   {
-    role: "Full Stack Developer",
+    role: "Generative AI Engineer | Full Stack Developer",
     company: "Backup Infotech",
     period: "Jul 2024 – Present",
     location: "Chandigarh, India",
