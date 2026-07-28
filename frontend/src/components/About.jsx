@@ -12,7 +12,7 @@ const DEFAULT_CARDS = [
 const DEFAULT_TAGS = ['PHP', 'Node.js', 'React', 'Python', 'FastAPI', 'DeepFace', 'MediaPipe', 'PostgreSQL']
 
 const DEFAULTS = {
-  aboutPara1: "I'm a Full Stack Developer & AI Integration Engineer based in Chandigarh, currently building production apps at Backup Infotech.",
+  aboutPara1: "I'm a Generative AI Engineer | Full Stack Developer based in Chandigarh, currently building production apps at Backup Infotech.",
   aboutPara2: "What sets me apart — I don't just build websites. I integrate real AI into products: face authentication systems, LLM-powered assistants, OCR pipelines, and computer vision that actually works in production.",
   aboutPara3: "MCA from Chandigarh University, with hands-on experience across PHP, Node.js, React, Python, FastAPI and more. I've shipped 5+ production apps, built 10+ REST APIs, and integrated real payment systems.",
   aboutTags: DEFAULT_TAGS,

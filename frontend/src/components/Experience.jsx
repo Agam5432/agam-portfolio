@@ -6,7 +6,7 @@ import axios from 'axios'
 const DEFAULT_EXP = [
   {
     _id: 'default',
-    role: 'Full Stack Developer',
+    role: 'Generative AI Engineer | Full Stack Developer',
     company: 'Backup Infotech',
     period: 'Jul 2024 – Present',
     location: 'Chandigarh, India',

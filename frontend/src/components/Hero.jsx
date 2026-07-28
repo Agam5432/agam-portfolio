@@ -6,8 +6,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const DEFAULTS = {
   name: "Agam Tyagi",
-  title: "Full Stack Developer",
-  subtitle: "AI Integration Engineer",
+  title: "Generative AI Engineer",
+  subtitle: "Full Stack Developer",
   tagline: "Building production-grade web apps with real AI — computer vision, LLMs, and everything in between.",
   badge: "Open to Opportunities",
   badge2: "Open to On-site / Office-based",
@@ -25,12 +25,13 @@ const DEFAULTS = {
 const CODE_LINES = [
   { tokens: [{ t: "const", c: "#6c63ff" }, { t: " developer", c: "#00d4ff" }, { t: " = {", c: "#f0f0f5" }] },
   { tokens: [{ t: "  name", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Agam Tyagi"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
-  { tokens: [{ t: "  role", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Full Stack Dev"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
+  { tokens: [{ t: "  role", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Generative AI | Full Stack Dev"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: "  ai", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Integration Engineer"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: "  skills", c: "#10b981" }, { t: ": [", c: "#f0f0f5" }] },
+  { tokens: [{ t: '    "RAG"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"LLM"', c: "#fbbf24" }] },
+    { tokens: [{ t: '    "Prompt Engineering"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"LangChain"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: '    "React"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"Node.js"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
-  { tokens: [{ t: '    "Python"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"DeepFace"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
-  { tokens: [{ t: '    "FastAPI"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"Groq AI"', c: "#fbbf24" }] },
+    { tokens: [{ t: '    "MongoDB"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"PostgreSQL"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: "  ]", c: "#f0f0f5" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: "  status", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"available ✅"', c: "#fbbf24" }] },
   { tokens: [{ t: "}", c: "#f0f0f5" }] },
