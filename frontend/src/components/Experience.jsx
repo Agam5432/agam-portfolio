@@ -3,27 +3,9 @@ import { motion } from 'framer-motion'
 import { Briefcase, Calendar } from 'lucide-react'
 import axios from 'axios'
 
-const DEFAULT_EXP = [
-  {
-    _id: 'default',
-    role: 'Generative AI Engineer | Full Stack Developer',
-    company: 'Backup Infotech',
-    period: 'Jul 2024 – Present',
-    location: 'Chandigarh, India',
-    points: [
-      'Designed and deployed 5+ production-grade full-stack web applications using PHP, Laravel, Node.js, Express.js & MySQL',
-      'Built and documented 10+ RESTful APIs consumed by web and mobile clients with full authentication',
-      'Integrated Razorpay & Stripe payment gateways with webhook handling across multiple platforms',
-      'Implemented JWT-based authentication with RBAC and granular permission handling',
-      'Optimised complex SQL queries, indexing strategies & maintained Git-based team workflows',
-      'Covered diverse industry domains: e-commerce, examination systems, multi-role platforms',
-    ],
-    tags: ['PHP', 'Laravel', 'Node.js', 'Express.js', 'MySQL', 'JWT', 'RBAC', 'Razorpay', 'Stripe', 'REST APIs'],
-  }
-]
-
 export default function Experience() {
-  const [experiences, setExperiences] = useState(DEFAULT_EXP)
+  const [experiences, setExperiences] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     axios.get(`/api/experience`)
@@ -31,6 +13,7 @@ export default function Experience() {
         if (r.data?.length > 0) setExperiences(r.data)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -42,8 +25,12 @@ export default function Experience() {
         <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-12">Where I've Worked</h2>
       </motion.div>
 
+      {loading && (
+        <div className="text-sm" style={{ color: '#888899' }}>Loading experience…</div>
+      )}
+
       <div className="space-y-6 max-w-3xl">
-        {experiences.map((exp, idx) => (
+        {!loading && experiences.map((exp, idx) => (
           <motion.div key={exp._id || idx}
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 + idx * 0.1, duration: 0.4 }}

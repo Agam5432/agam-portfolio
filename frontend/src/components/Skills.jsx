@@ -2,19 +2,9 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 
-const DEFAULT_GROUPS = [
-  { label: 'Frontend', chips: ['React.js', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap', 'jQuery', 'AJAX'], isAI: false },
-  { label: 'Backend', chips: ['Node.js', 'Express.js', 'PHP', 'Laravel', 'FastAPI', 'REST APIs', 'MVC'], isAI: false },
-  { label: 'AI / ML', chips: ['DeepFace', 'MediaPipe', 'OpenCV', 'EasyOCR', 'PaddleOCR', 'LLM Integration', 'Groq', 'Ollama'], isAI: true },
-  { label: 'Databases', chips: ['MySQL', 'PostgreSQL', 'MongoDB', 'Prisma ORM', 'Mongoose', 'SQLite'], isAI: false },
-  { label: 'Languages', chips: ['JavaScript (ES6+)', 'Python', 'PHP'], isAI: false },
-  { label: 'Auth & Security', chips: ['JWT', 'RBAC', 'Session Auth', 'Liveness Detection', 'Anti-Spoofing'], isAI: false },
-  { label: 'Payments', chips: ['Razorpay', 'Stripe'], isAI: false },
-  { label: 'Tools', chips: ['Git', 'GitHub', 'Postman', 'VS Code', 'Prisma Studio', 'Multer', 'Axios'], isAI: false },
-]
-
 export default function Skills() {
-  const [skillGroups, setSkillGroups] = useState(DEFAULT_GROUPS)
+  const [skillGroups, setSkillGroups] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     axios.get(`/api/skills`)
@@ -22,6 +12,7 @@ export default function Skills() {
         if (r.data?.length > 0) setSkillGroups(r.data)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   return (
@@ -36,8 +27,12 @@ export default function Skills() {
         </p>
       </motion.div>
 
+      {loading && (
+        <div className="text-sm" style={{ color: '#888899' }}>Loading skills…</div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {skillGroups.map((group, i) => (
+        {!loading && skillGroups.map((group, i) => (
           <motion.div key={group.label || i}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 + i * 0.06, duration: 0.35 }}
