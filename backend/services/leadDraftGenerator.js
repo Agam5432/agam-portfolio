@@ -21,7 +21,7 @@ Write a concise, professional message (3-5 sentences) summarizing what the visit
   `.trim();
 
   const response = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     max_tokens: 200,
     temperature: 0.4,
