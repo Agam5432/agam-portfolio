@@ -20,7 +20,7 @@ Respond with ONLY one word: "yes" or "no". Do not explain.
   `.trim();
 
   const response = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
     max_tokens: 5,
     temperature: 0,
