@@ -14,7 +14,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const MODEL = "llama-3.1-8b-instant";
+const MODEL = "llama-3.3-70b-versatile";
 
 // ============================================================
 // NEXORA SYSTEM PROMPT — RAG VERSION (dynamic, rebuilt per request)
@@ -87,7 +87,7 @@ function isNegative(text) {
 
 async function extractName(rawText) {
   const response = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
+    model: "llama-3.3-70b-versatile",
     messages: [{
       role: "user",
       content: `Extract just the person's name from this message. Respond with ONLY the name, nothing else.\n\nMessage: "${rawText}"`
