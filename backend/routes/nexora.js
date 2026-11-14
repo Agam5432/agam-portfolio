@@ -39,6 +39,8 @@ CONTACT RULE: for a general "how do I contact him" question give only email, pho
 AVAILABILITY RULE: if asked whether he is available or open to work, confirm he is open to opportunities and say explicitly that this includes onsite, office-based and remote roles.
 LEADS: if a visitor wants to hire Agam, collaborate or talk to him, answer their question and stop there. Do NOT offer to send an email and do NOT ask for their name, email or phone yourself: a separate step handles that right after your reply.
 
+RESPECT (important): always speak about Agam with respect, never casually. In Hinglish refer to him as "Agam ji" or "Agam sir" at first mention and use the respectful plural forms: "woh job search kar rahe hain", "unhone banaya", "unka experience", "unko", "unse", never "woh kar raha hai", "usne", "uska" or "tu/tera". In English use "he/his" politely and professionally. Address the visitor respectfully too: "aap" in Hinglish, never "tum" or "tu". Do not make jokes about Agam. Keep the tone warm, polite and professional.
+
 STYLE: plain text only, no markdown (no bold, bullets, numbered lists or headers). Default to 3 to 5 flowing sentences unless the visitor asks for full detail.
 
 PORTFOLIO DATA:
@@ -134,7 +136,7 @@ const MSG = {
     restart: "Something went wrong with the details, so let's start again. Would you like me to email Agam on your behalf?",
   },
   hi: {
-    offer: "Kya main aapki taraf se Agam ko email kar du? Bas aapka naam, email, mobile number aur reason chahiye, phir bhejne se pehle poora email aapko dikha dunga. (haan/nahi)",
+    offer: "Kya main aapki taraf se Agam ji ko email kar doon? Bas aapka naam, email, mobile number aur reason chahiye, phir bhejne se pehle poora email aapko dikha dunga. (haan/nahi)",
     offerRepeat: "Bas confirm kar raha hu: kya main aapki taraf se Agam ko email kar du? (haan/nahi)",
     askName: "Badhiya! Aapka naam kya hai?",
     askEmail: (n) => `Aapse mil ke accha laga, ${n}! Aapka email address kya hai, taaki Agam reply kar sake?`,
@@ -147,8 +149,8 @@ const MSG = {
     declineOffer: "Koi baat nahi! Agam ke baare me aur kuch bhi pooch sakte ho.",
     cancelled: "Theek hai, maine ye cancel kar diya. Agam ke baare me aur kuch jaanna hai?",
     notSent: "Theek hai, main nahi bhejunga. Baad me try karna ho to bata dena.",
-    sent: "Ho gaya! Maine aapki details ke saath Agam ko email bhej diya hai. Wo jaldi reply karenge. 🎉",
-    sendFail: "Sorry, abhi email nahi bhej paya. Aap Agam ko seedha agamtyagi2001@gmail.com par mail kar sakte ho, ya dobara try karne ke liye \"haan\" bolo.",
+    sent: "Ho gaya! Maine aapki details ke saath Agam ji ko email bhej diya hai. Woh jald hi aapko reply karenge. 🎉",
+    sendFail: "Sorry, abhi email nahi bhej paya. Aap Agam ji ko seedha agamtyagi2001@gmail.com par mail kar sakte hain, ya dobara try karne ke liye \"haan\" bolo.",
     restart: "Details me kuch gadbad ho gayi, chalo dobara shuru karte hain. Kya main aapki taraf se Agam ko email kar du?",
   },
 };
