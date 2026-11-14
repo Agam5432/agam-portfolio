@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const Groq = require("groq-sdk");
 
 const ChatMessage = require("../models/ChatMessage");
 const { getPortfolioContext } = require("../services/portfolioContext");
@@ -8,8 +7,7 @@ const { detectInterest } = require("../services/leadDetector");
 const { generateDraft } = require("../services/leadDraftGenerator");
 const { sendLeadEmail } = require("../services/emailService");
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const MODEL = "llama-3.3-70b-versatile";
+const { complete, FAST_MODEL } = require("../services/llm");
 
 // ============================================================
 // SYSTEM PROMPT — knowledge comes from the admin-managed portfolio data
@@ -65,13 +63,12 @@ function extractPhone(text) {
 
 async function extractName(rawText) {
   try {
-    const r = await groq.chat.completions.create({
-      model: MODEL,
+    const n = await complete({
+      model: FAST_MODEL,
       messages: [{ role: "user", content: `Extract just the person's name from this message. Respond with ONLY the name, nothing else.\n\nMessage: "${rawText}"` }],
-      max_tokens: 15,
+      maxTokens: 300,
       temperature: 0,
     });
-    const n = r.choices[0]?.message?.content?.trim();
     return (n || rawText).slice(0, 60);
   } catch {
     return rawText.slice(0, 60);
@@ -207,8 +204,7 @@ router.post("/chat", async (req, res) => {
     });
     messages.push({ role: "user", content: text });
 
-    const response = await groq.chat.completions.create({ model: MODEL, messages, max_tokens: 350, temperature: 0.5 });
-    let reply = response.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    let reply = (await complete({ messages, maxTokens: 1500, temperature: 0.5 })) || "Sorry, I couldn't generate a response.";
 
     // Offer to email Agam when the visitor shows intent (once per session).
     if (!lead.hasBeenOffered) {

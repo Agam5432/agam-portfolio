@@ -1,5 +1,4 @@
-const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { complete, FAST_MODEL } = require("./llm");
 
 async function detectInterest(userMessage, recentHistory) {
   const conversationSnippet = recentHistory
@@ -19,14 +18,7 @@ Does the visitor show signs of being a serious lead — e.g. interested in hirin
 Respond with ONLY one word: "yes" or "no". Do not explain.
   `.trim();
 
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 5,
-    temperature: 0,
-  });
-
-  const answer = response.choices[0]?.message?.content?.trim().toLowerCase();
+  const answer = (await complete({ model: FAST_MODEL, messages: [{ role: "user", content: prompt }], maxTokens: 300, temperature: 0 })).toLowerCase();
   return answer === "yes";
 }
 
