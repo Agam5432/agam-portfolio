@@ -37,7 +37,7 @@ REASONING:
 
 CONTACT RULE: for a general "how do I contact him" question give only email, phone and LinkedIn. Mention GitHub only if asked.
 AVAILABILITY RULE: if asked whether he is available or open to work, confirm he is open to opportunities and say explicitly that this includes onsite, office-based and remote roles.
-LEADS: if a visitor wants to hire Agam, collaborate or talk to him, tell them you can email Agam on their behalf (you'll just need their name, email, mobile number and the reason). The email is collected by a separate step, so don't ask for those details yourself.
+LEADS: if a visitor wants to hire Agam, collaborate or talk to him, answer their question and stop there. Do NOT offer to send an email and do NOT ask for their name, email or phone yourself: a separate step handles that right after your reply.
 
 STYLE: plain text only, no markdown (no bold, bullets, numbered lists or headers). Default to 3 to 5 flowing sentences unless the visitor asks for full detail.
 
@@ -50,8 +50,8 @@ ${portfolio}
 // HELPERS
 // ============================================================
 
-const isAffirmative = (t) => /^(yes|yeah|yep|yup|sure|ok|okay|haan|han|ha|bilkul|theek hai|kar do|krdo|bhej do|send)\b/i.test(t.trim());
-const isNegative = (t) => /^(no|nah|nope|nahi|na|mat|skip|cancel|stop|rehne do)\b/i.test(t.trim());
+const isAffirmative = (t) => /^(yes|yeah|yep|yup|yea|sure|ok|okay|haan|han|haa|ha|hanji|haanji|ji|ji haan|bilkul|theek hai|thik hai|kar do|krdo|kardo|kr do|bhej do|bhejdo|send|y)\b/i.test(t.trim());
+const isNegative = (t) => /^(no|nah|nope|nahi|nahin|nhi|nai|na|naa|mat|skip|cancel|stop|rehne do|rhne do|n)\b/i.test(t.trim());
 const EMAIL_RE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 const MAIL_INTENT_RE = /(send|write|drop)\b.*\b(mail|email|message)\b|\b(mail|email|message)\s+(him|agam)\b|contact (him|agam)|mail (kar|bhej)|email (kar|bhej)/i;
 
@@ -87,6 +87,7 @@ function sanitizeLeadState(ls) {
     reason: clip(s.reason, 600),
     draft: clip(s.draft, 1500),
     hasBeenOffered: !!s.hasBeenOffered,
+    lang: s.lang === "hi" ? "hi" : "en",
   };
 }
 
@@ -103,7 +104,55 @@ function composePreview(l) {
   ].join("\n");
 }
 
-const OFFER_TEXT = "Would you like me to email Agam on your behalf? I'll just need your name, email, mobile number and the reason, then I'll show you the complete email before anything is sent. (yes/no)";
+
+// Hinglish = Hindi typed in Roman letters. The scripted (non-LLM) replies follow the visitor's language too.
+const HINGLISH_RE = /\b(kaise|kese|kya|kyu|kyun|hai|hain|ho|hu|hoon|nhi|nahi|nahin|haan|han|btao|batao|bataiye|aap|aapka|mujhe|mera|meri|tum|tumhara|kro|karo|kar|krna|karna|abhi|abi|vo|woh|ye|yeh|ke|ka|ki|me|mein|par|se|chahiye|chaiye|bhai|accha|acha|theek|thik|kuch|koi|raha|rha|rahe|chal|chalra|krr|dedo|do)\b/gi;
+function detectLang(text, history = []) {
+  const recent = [text, ...history.filter(m => m && m.role === "user").slice(-3).map(m => String(m.content || ""))];
+  const hits = recent.join(" ").match(HINGLISH_RE) || [];
+  const words = recent.join(" ").split(/\s+/).filter(Boolean).length || 1;
+  return hits.length >= 2 || hits.length / words > 0.2 ? "hi" : "en";
+}
+
+const MSG = {
+  en: {
+    offer: "Would you like me to email Agam on your behalf? I'll just need your name, email, mobile number and the reason, then I'll show you the complete email before anything is sent. (yes/no)",
+    offerRepeat: "Just checking: should I email Agam on your behalf? (yes/no)",
+    askName: "Great! What's your name?",
+    askEmail: (n) => `Nice to meet you, ${n}! What's your email address so Agam can reply?`,
+    badEmail: "That doesn't look like a valid email. Could you re-enter it?",
+    askPhone: "Thanks! And your mobile number?",
+    badPhone: "That doesn't look like a valid mobile number. Could you re-enter it (with country code if outside India)?",
+    askReason: "Got it. What's the reason you'd like to reach Agam? (e.g. a role, project or collaboration you have in mind)",
+    preview: (m) => `Here's the complete email I'll send to Agam:\n\n${m}\n\nShall I send it as it is? Say "yes" to send, or tell me what to change.`,
+    updated: (m) => `Updated email:\n\n${m}\n\nShall I send this now? (yes/no)`,
+    declineOffer: "No problem! Ask me anything else about Agam.",
+    cancelled: "No problem, I've cancelled that. Anything else you'd like to know about Agam?",
+    notSent: "No problem, I won't send it. Let me know if you'd like to try again later.",
+    sent: "Done! I've emailed Agam with your details. He'll get back to you soon. 🎉",
+    sendFail: "Sorry, I couldn't send the email right now. You can reach Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.",
+    restart: "Something went wrong with the details, so let's start again. Would you like me to email Agam on your behalf?",
+  },
+  hi: {
+    offer: "Kya main aapki taraf se Agam ko email kar du? Bas aapka naam, email, mobile number aur reason chahiye, phir bhejne se pehle poora email aapko dikha dunga. (haan/nahi)",
+    offerRepeat: "Bas confirm kar raha hu: kya main aapki taraf se Agam ko email kar du? (haan/nahi)",
+    askName: "Badhiya! Aapka naam kya hai?",
+    askEmail: (n) => `Aapse mil ke accha laga, ${n}! Aapka email address kya hai, taaki Agam reply kar sake?`,
+    badEmail: "Ye email sahi nahi lag raha. Kya aap dobara daal sakte ho?",
+    askPhone: "Thanks! Aur aapka mobile number?",
+    badPhone: "Ye mobile number sahi nahi lag raha. Kya aap dobara daal sakte ho (India ke bahar ho to country code ke saath)?",
+    askReason: "Theek hai. Aap Agam se kis liye contact karna chahte ho? (jaise koi role, project ya collaboration)",
+    preview: (m) => `Ye poora email hai jo main Agam ko bhejunga:\n\n${m}\n\nKya aise hi bhej du? Bhejne ke liye "haan" bolo, ya batao kya badalna hai.`,
+    updated: (m) => `Updated email:\n\n${m}\n\nAb bhej du? (haan/nahi)`,
+    declineOffer: "Koi baat nahi! Agam ke baare me aur kuch bhi pooch sakte ho.",
+    cancelled: "Theek hai, maine ye cancel kar diya. Agam ke baare me aur kuch jaanna hai?",
+    notSent: "Theek hai, main nahi bhejunga. Baad me try karna ho to bata dena.",
+    sent: "Ho gaya! Maine aapki details ke saath Agam ko email bhej diya hai. Wo jaldi reply karenge. 🎉",
+    sendFail: "Sorry, abhi email nahi bhej paya. Aap Agam ko seedha agamtyagi2001@gmail.com par mail kar sakte ho, ya dobara try karne ke liye \"haan\" bolo.",
+    restart: "Details me kuch gadbad ho gayi, chalo dobara shuru karte hain. Kya main aapki taraf se Agam ko email kar du?",
+  },
+};
+
 
 // ============================================================
 // CHAT API
@@ -123,54 +172,55 @@ router.post("/chat", async (req, res) => {
     const lead = sanitizeLeadState(leadState);
     let next = { ...lead };
     const done = (reply, state = next) => res.json({ success: true, reply, leadState: state });
-    const IDLE = { stage: "idle", hasBeenOffered: true };
+    const T = MSG[lead.lang];
+    const IDLE = { stage: "idle", hasBeenOffered: true, lang: lead.lang };
 
     // ---------------- Lead capture state machine ----------------
     if (lead.stage !== "idle" && lead.stage !== "sent") {
       if (lead.stage !== "awaiting_offer_response" && lead.stage !== "awaiting_confirmation" && /^(cancel|stop|skip|rehne do)\b/i.test(text)) {
-        return done("No problem, I've cancelled that. Anything else you'd like to know about Agam?", IDLE);
+        return done(T.cancelled, IDLE);
       }
 
       switch (lead.stage) {
         case "awaiting_offer_response":
           if (isAffirmative(text)) {
             next.stage = "collecting_name";
-            return done("Great! What's your name?");
+            return done(T.askName);
           }
-          if (isNegative(text)) return done("No problem! Ask me anything else about Agam.", IDLE);
-          return done("Just checking: should I email Agam on your behalf? (yes/no)");
+          if (isNegative(text)) return done(T.declineOffer, IDLE);
+          return done(T.offerRepeat);
 
         case "collecting_name":
           next.name = await extractName(text);
           next.stage = "collecting_email";
-          return done(`Nice to meet you, ${next.name}! What's your email address so Agam can reply?`);
+          return done(T.askEmail(next.name));
 
         case "collecting_email": {
           const m = text.match(EMAIL_RE);
-          if (!m) return done("That doesn't look like a valid email. Could you re-enter it?");
+          if (!m) return done(T.badEmail);
           next.email = m[0].slice(0, 200);
           next.stage = "collecting_phone";
-          return done("Thanks! And your mobile number?");
+          return done(T.askPhone);
         }
 
         case "collecting_phone": {
           const phone = extractPhone(text);
-          if (!phone) return done("That doesn't look like a valid mobile number. Could you re-enter it (with country code if outside India)?");
+          if (!phone) return done(T.badPhone);
           next.phone = phone;
           next.stage = "collecting_reason";
-          return done("Got it. What's the reason you'd like to reach Agam? (e.g. a role, project or collaboration you have in mind)");
+          return done(T.askReason);
         }
 
         case "collecting_reason": {
           next.reason = text;
           next.draft = await generateDraft({ ...next, recentHistory: history });
           next.stage = "awaiting_confirmation";
-          return done(`Here's the complete email I'll send to Agam:\n\n${composePreview(next)}\n\nShall I send it as it is? Say "yes" to send, or tell me what to change.`);
+          return done(T.preview(composePreview(next)));
         }
 
         case "awaiting_confirmation": {
           const valid = EMAIL_RE.test(next.email || "") && next.name && next.draft && next.phone && next.reason;
-          if (!valid) return done("Something went wrong with the details, so let's start again. Would you like me to email Agam on your behalf?", { stage: "awaiting_offer_response", hasBeenOffered: true });
+          if (!valid) return done(T.restart, { stage: "awaiting_offer_response", hasBeenOffered: true, lang: lead.lang });
           if (isAffirmative(text)) {
             try {
               await sendLeadEmail({
@@ -180,15 +230,15 @@ router.post("/chat", async (req, res) => {
                 reason: next.reason,
                 messageBody: next.draft,
               });
-              return done("Done! I've emailed Agam with your details. He'll get back to you soon. 🎉", { stage: "sent", hasBeenOffered: true });
+              return done(T.sent, { stage: "sent", hasBeenOffered: true, lang: lead.lang });
             } catch (mailErr) {
               console.error("Lead email failed:", mailErr);
-              return done("Sorry, I couldn't send the email right now. You can reach Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.");
+              return done(T.sendFail);
             }
           }
-          if (isNegative(text)) return done("No problem, I won't send it. Let me know if you'd like to try again later.", IDLE);
+          if (isNegative(text)) return done(T.notSent, IDLE);
           next.draft = await generateDraft({ ...next, extra: text, recentHistory: history });
-          return done(`Updated email:\n\n${composePreview(next)}\n\nShall I send this now? (yes/no)`);
+          return done(T.updated(composePreview(next)));
         }
 
         default:
@@ -213,8 +263,9 @@ router.post("/chat", async (req, res) => {
         try { interested = await detectInterest(text, history); } catch { interested = false; }
       }
       if (interested) {
-        reply += `\n\n${OFFER_TEXT}`;
-        next = { stage: "awaiting_offer_response", hasBeenOffered: true };
+        const lang = detectLang(text, history);
+        reply += `\n\n${MSG[lang].offer}`;
+        next = { stage: "awaiting_offer_response", hasBeenOffered: true, lang };
       }
     }
 
