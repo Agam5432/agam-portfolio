@@ -8,6 +8,8 @@ const chatbot = require("./routes/chat");
 require("dotenv").config();
 
 const app = express();
+// Render sits behind a proxy; needed so express-rate-limit sees real client IPs.
+app.set("trust proxy", 1);
 
 // Middleware
 app.use(cors({

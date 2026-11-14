@@ -27,4 +27,16 @@ async function sendLeadEmail({ visitorName, visitorEmail, messageBody }) {
   await transporter.sendMail(mailOptions);
 }
 
-module.exports = { sendLeadEmail };
+async function sendResetCodeEmail({ to, code, minutes }) {
+  await transporter.sendMail({
+    from: `"Portfolio Admin" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: "Your admin panel password reset code",
+    text: `Your password reset code is: ${code}
+
+This code is valid for ${minutes} minutes and can be used only once.
+If you did not request this, ignore this email. Your password has not changed.`,
+  });
+}
+
+module.exports = { sendLeadEmail, sendResetCodeEmail };
