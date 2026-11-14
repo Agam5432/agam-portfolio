@@ -15,7 +15,6 @@ const profile = {
   stats: [
     { num: "2.3 yrs", label: "Software Engineering" },
     { num: "1+ yr", label: "Generative AI" },
-    { num: "400+", label: "Pages Indexed in RAG" },
     { num: "6", label: "Projects Shipped" },
   ],
   aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2.3 years of software engineering experience and 1+ year of hands-on Generative AI work at Backup Infotech.",

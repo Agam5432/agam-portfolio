@@ -17,7 +17,6 @@ const DEFAULTS = {
   stats: [
     { num: "2.3 yrs", label: "Software Engineering" },
     { num: "1+ yr", label: "Generative AI" },
-    { num: "400+", label: "Pages Indexed in RAG" },
     { num: "6", label: "Projects Shipped" },
   ],
 };
