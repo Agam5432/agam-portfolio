@@ -2,7 +2,13 @@
 // Render: outbound SMTP ports are blocked on free instances, which is why lead emails never arrived.
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Created lazily: `new Resend(undefined)` throws, which would crash the whole server at startup if the key is missing.
+let client = null;
+function getResend() {
+  if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set on the server");
+  if (!client) client = new Resend(process.env.RESEND_API_KEY);
+  return client;
+}
 const FROM = process.env.MAIL_FROM || "Portfolio <onboarding@resend.dev>";
 // With Resend's shared sender, mail can only be delivered to the Resend account's own email.
 const OWNER_EMAIL = process.env.OWNER_EMAIL || "agamtyagi2001@gmail.com";
@@ -10,7 +16,7 @@ const OWNER_EMAIL = process.env.OWNER_EMAIL || "agamtyagi2001@gmail.com";
 const esc = (v) => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function send(payload) {
-  const { error } = await resend.emails.send({ from: FROM, ...payload });
+  const { error } = await getResend().emails.send({ from: FROM, ...payload });
   if (error) throw new Error(`Resend error: ${error.message || JSON.stringify(error)}`);
 }
 
