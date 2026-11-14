@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 export const api = (token) => axios.create({
+  baseURL: axios.defaults.baseURL,
   headers: { Authorization: `Bearer ${token}` }
 })
 

@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://agam-portfolio.onrender.com/api/:path*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/"
     }
