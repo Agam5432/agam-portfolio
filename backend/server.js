@@ -60,6 +60,14 @@ const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
+    // One-time content sync without a shell (Render free plan has none).
+    // Set SEED_ON_START=true (and SEED_PROFILE=true to also overwrite hero/about), deploy once, then REMOVE the variables,
+    // otherwise every deploy would overwrite content edited in the admin panel.
+    if (process.env.SEED_ON_START === "true") {
+      console.warn("⚠️ SEED_ON_START is set: syncing portfolio content from data/portfolioContent.js. Remove this variable after the first run.");
+      return require("./seedDynamic").syncContent({ overwriteProfile: process.env.SEED_PROFILE === "true" })
+        .then(() => app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`)));
+    }
     app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
   })
   .catch(err => {

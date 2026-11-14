@@ -16,8 +16,7 @@ async function replaceAll(Model, docs, label) {
   console.log(`✅ ${label} synced (${docs.length})`);
 }
 
-async function seed() {
-  await mongoose.connect(process.env.MONGODB_URI);
+async function syncContent({ overwriteProfile = false } = {}) {
   await replaceAll(SkillGroup, content.skillGroups, "Skills");
   await replaceAll(Experience, content.experiences, "Experience");
   await replaceAll(Education, content.education, "Education");
@@ -27,14 +26,21 @@ async function seed() {
   if (!existing) {
     await Profile.create(content.profile);
     console.log("✅ Profile created");
-  } else if (process.argv.includes("--profile")) {
+  } else if (overwriteProfile) {
     await Profile.findByIdAndUpdate(existing._id, content.profile);
     console.log("✅ Profile overwritten");
   } else {
     console.log("ℹ️  Profile left untouched (use --profile to overwrite)");
   }
-  await mongoose.disconnect();
-  console.log("✅ Done.");
+  console.log("✅ Content sync done.");
 }
 
-seed().catch(err => { console.error(err); process.exit(1); });
+module.exports = { syncContent };
+
+// CLI: node seedDynamic.js [--profile]
+if (require.main === module) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => syncContent({ overwriteProfile: process.argv.includes("--profile") }))
+    .then(() => mongoose.disconnect())
+    .catch(err => { console.error(err); process.exit(1); });
+}
