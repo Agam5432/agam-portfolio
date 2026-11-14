@@ -132,3 +132,13 @@ cd admin && npm run dev
 ---
 
 Built with ❤️ by Agam Tyagi
+
+## Syncing content to the database
+Content (profile, skills, experience, education, projects) lives in `backend/data/portfolioContent.js`.
+```
+cd backend
+node seedDynamic.js            # replace skills/experience/education/projects
+node seedDynamic.js --profile  # also overwrite hero/about profile
+node scripts/ingestPortfolio.js  # refresh the chatbot (Qdrant) index afterwards
+```
+Copy `backend/.env.example` to `backend/.env` and fill it in. On Render, the Playwright dependency needs its browser installed (`npx playwright install chromium`) only if you run the crawler there.

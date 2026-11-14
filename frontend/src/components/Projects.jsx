@@ -1,19 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Github, Loader2 } from 'lucide-react'
-import axios from 'axios'
+import { ExternalLink, Github } from 'lucide-react'
+import useApiList from '../lib/useApiList'
+import StatusMessage from './StatusMessage'
 
-// Fallback data if backend not running
-const FALLBACK_PROJECTS = [
-  { _id: '1', title: 'AI Face Authentication & Liveness Detection', description: 'Biometric authentication with real-time liveness detection — blink & head-movement verification to prevent spoofing and replay attacks.', icon: '🤖', tags: ['AI', 'Security'], stack: ['Node.js', 'FastAPI', 'DeepFace', 'MediaPipe', 'PostgreSQL', 'Prisma'], featured: true, order: 1 },
-  { _id: '2', title: 'Nexora AI Assistant', description: 'AI conversational assistant with multi-model LLM support (Groq + Ollama), real-time web search & multilingual responses.', icon: '🧠', tags: ['AI', 'LLM'], stack: ['Python', 'Groq API', 'Ollama', 'Gradio', 'Tavily'], featured: true, order: 2 },
-  { _id: '3', title: 'Aashi Rainwear — E-Commerce', description: 'Cross-platform Flutter e-commerce app with product catalogue, cart, order tracking & Razorpay payment processing.', icon: '🛒', tags: ['E-Commerce', 'Flutter'], stack: ['Flutter', 'Node.js', 'PHP', 'MySQL'], featured: true, order: 3 },
-  { _id: '4', title: 'AI Resume Parser', description: 'Automated resume parsing for PDF & DOCX — extracts skills, experience, education into structured JSON for ATS.', icon: '📄', tags: ['AI', 'Parser'], stack: ['Node.js', 'FastAPI', 'Python'], featured: true, order: 4 },
-  { _id: '5', title: 'Google Photos-Style Face Grouping', description: 'Auto face detection & clustering using DeepFace similarity matching to group individuals across photo collections.', icon: '📷', tags: ['AI', 'Vision'], stack: ['Express.js', 'DeepFace', 'PostgreSQL', 'Prisma'], featured: false, order: 5 },
-  { _id: '6', title: 'OCR Document Extraction', description: 'High-accuracy OCR pipeline for scanned docs, ID cards & invoices using dual OCR engines with OpenCV preprocessing.', icon: '🔍', tags: ['AI', 'OCR'], stack: ['FastAPI', 'OpenCV', 'EasyOCR', 'PaddleOCR'], featured: false, order: 6 },
-  { _id: '7', title: 'Radigone Web App', description: 'Multi-role platform with fine-grained RBAC, permission management, transaction handling & automated commission calculation.', icon: '⚙️', tags: ['Web', 'RBAC'], stack: ['PHP', 'Laravel', 'MySQL', 'JavaScript'], featured: false, order: 7 },
-  { _id: '8', title: 'Online Examination System', description: 'Secure full-featured exam platform with timed tests, auto grading, result analytics & admin question bank management.', icon: '📝', tags: ['Web', 'EdTech'], stack: ['Laravel', 'PHP', 'MySQL', 'jQuery', 'AJAX'], featured: false, order: 8 },
-]
 
 const tagColors = {
   AI: { bg: 'rgba(108,99,255,0.12)', border: 'rgba(108,99,255,0.3)', color: '#6c63ff' },
@@ -95,20 +85,8 @@ function ProjectCard({ project, i }) {
 }
 
 export default function Projects() {
-  const [projects, setProjects] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: projects, loading, error, retry } = useApiList('/api/projects')
   const [showAll, setShowAll] = useState(false)
-
-useEffect(() => {
-    axios.get(`/api/projects`)
-      .then(r => {
-        // Array check karo
-        const data = Array.isArray(r.data) ? r.data : []
-        setProjects(data)
-      })
-      .catch(() => setProjects(FALLBACK_PROJECTS))
-      .finally(() => setLoading(false))
-  }, [])
 
   const featured = projects.filter(p => p.featured)
   const rest = projects.filter(p => !p.featured)
@@ -126,10 +104,8 @@ useEffect(() => {
         </p>
       </motion.div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 text-sm" style={{ color: '#888899' }}>
-          <Loader2 size={16} className="animate-spin" /> Loading projects...
-        </div>
+      {loading || error || projects.length === 0 ? (
+        <StatusMessage loading={loading} error={error} empty={!loading && !error} label="projects" onRetry={retry} />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

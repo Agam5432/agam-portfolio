@@ -6,27 +6,27 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const DEFAULTS = {
   name: "Agam Tyagi",
-  title: "Generative AI Engineer",
-  subtitle: "Full Stack Developer",
-  tagline: "Building production-grade web apps with real AI — computer vision, LLMs, and everything in between.",
+  title: "AI Engineer",
+  subtitle: "Generative AI · RAG · Agentic Systems",
+  tagline: "Building production LLM applications — RAG pipelines, agentic AI with tool calling, and real-time voice agents.",
   badge: "Open to Opportunities",
   badge2: "Open to On-site / Office-based",
   githubUrl: "https://github.com/Agam5432",
   linkedinUrl: "https://www.linkedin.com/in/agam-tyagi-6624a7204",
   resumeUrl: "/Agam_Tyagi_Resume.pdf",
   stats: [
-    { num: "2+", label: "Years Experience" },
-    { num: "5+", label: "Production Apps" },
-    { num: "10+", label: "REST APIs Built" },
-    { num: "8+", label: "Projects" },
+    { num: "2.3 yrs", label: "Software Engineering" },
+    { num: "1+ yr", label: "Generative AI" },
+    { num: "400+", label: "Pages Indexed in RAG" },
+    { num: "6", label: "Projects Shipped" },
   ],
 };
 
 const CODE_LINES = [
   { tokens: [{ t: "const", c: "#6c63ff" }, { t: " developer", c: "#00d4ff" }, { t: " = {", c: "#f0f0f5" }] },
   { tokens: [{ t: "  name", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Agam Tyagi"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
-  { tokens: [{ t: "  role", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Generative AI | Full Stack Dev"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
-  { tokens: [{ t: "  ai", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"Integration Engineer"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
+  { tokens: [{ t: "  role", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"AI Engineer"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
+  { tokens: [{ t: "  ai", c: "#10b981" }, { t: ": ", c: "#f0f0f5" }, { t: '"RAG | Agentic | Voice"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },
   { tokens: [{ t: "  skills", c: "#10b981" }, { t: ": [", c: "#f0f0f5" }] },
   { tokens: [{ t: '    "RAG"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"LLM"', c: "#fbbf24" }] },
     { tokens: [{ t: '    "Prompt Engineering"', c: "#fbbf24" }, { t: ", ", c: "#f0f0f5" }, { t: '"LangChain"', c: "#fbbf24" }, { t: ",", c: "#f0f0f5" }] },

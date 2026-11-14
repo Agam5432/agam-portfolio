@@ -104,19 +104,36 @@ async function extractName(rawText) {
 
 router.post("/chat", async (req, res) => {
   try {
-    const {
+    let {
       message,
       history = [],
       leadState = { stage: "idle" },
-    } = req.body;
+    } = req.body || {};
+    if (!Array.isArray(history)) history = [];
+    history = history.slice(-10);
 
-    const trimmedMessage = message?.trim();
+    const trimmedMessage = typeof message === "string" ? message.trim() : "";
 
     if (!trimmedMessage) {
       return res.status(400).json({
         error: "Message is required",
       });
     }
+
+    if (trimmedMessage.length > 1000) {
+      return res.status(400).json({ error: "Message too long" });
+    }
+
+    // leadState round-trips through the client, so never trust it blindly.
+    const ls = leadState && typeof leadState === "object" ? leadState : { stage: "idle" };
+    const clip = (v, n) => (typeof v === "string" ? v.slice(0, n) : undefined);
+    leadState = {
+      stage: clip(ls.stage, 40) || "idle",
+      name: clip(ls.name, 100),
+      email: clip(ls.email, 200),
+      rawMessage: clip(ls.rawMessage, 1000),
+      draft: clip(ls.draft, 1500),
+    };
 
     let newLeadState = { ...leadState };
     let reply;
@@ -176,7 +193,11 @@ router.post("/chat", async (req, res) => {
     }
 
     if (leadState.stage === "awaiting_confirmation") {
-      if (isAffirmative(trimmedMessage)) {
+      const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLeadState.email || "");
+      if (isAffirmative(trimmedMessage) && (!validEmail || !newLeadState.draft || !newLeadState.name)) {
+        newLeadState = { stage: "idle" };
+        reply = "Something went wrong with the details, let's start again — would you like to leave a message for Agam?";
+      } else if (isAffirmative(trimmedMessage)) {
         await sendLeadEmail({
           visitorName: newLeadState.name,
           visitorEmail: newLeadState.email,

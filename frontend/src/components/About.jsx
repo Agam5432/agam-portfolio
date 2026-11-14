@@ -3,18 +3,18 @@ import { motion } from 'framer-motion'
 import axios from 'axios'
 
 const DEFAULT_CARDS = [
-  { icon: '🤖', title: 'AI/ML Integration', desc: 'DeepFace, MediaPipe, OpenCV, LLMs — actual AI engineering, not just API calls' },
-  { icon: '⚡', title: 'Full Stack', desc: 'React, Node.js, PHP, Laravel, FastAPI — end to end delivery across the stack' },
-  { icon: '🔒', title: 'Auth & Security', desc: 'JWT, RBAC, biometric auth, liveness detection, anti-spoofing systems' },
-  { icon: '🚀', title: 'Production Ready', desc: '5+ deployed apps with real clients, payment integration & thousands of requests' },
+  { icon: '🤖', title: 'Agentic AI', desc: 'LangGraph tool-calling agents that search, recommend and act, with Gemini-to-Groq failover' },
+  { icon: '📚', title: 'RAG Systems', desc: 'Crawling, chunking, local embeddings and Qdrant search powering grounded chatbots' },
+  { icon: '🎙️', title: 'Voice AI', desc: 'Real-time voice agents over WebSockets with barge-in, English, Hindi and Hinglish' },
+  { icon: '⚡', title: 'Full Stack', desc: 'React, Node.js, Express, MongoDB and REST APIs with JWT auth and RBAC' },
 ]
 
-const DEFAULT_TAGS = ['PHP', 'Node.js', 'React', 'Python', 'FastAPI', 'DeepFace', 'MediaPipe', 'PostgreSQL']
+const DEFAULT_TAGS = ['LangGraph', 'LangChain', 'RAG', 'Qdrant', 'Groq', 'Gemini Live API', 'Node.js', 'FastAPI', 'React']
 
 const DEFAULTS = {
-  aboutPara1: "I'm a Generative AI Engineer | Full Stack Developer based in Chandigarh, currently building production apps at Backup Infotech.",
-  aboutPara2: "What sets me apart — I don't just build websites. I integrate real AI into products: face authentication systems, LLM-powered assistants, OCR pipelines, and computer vision that actually works in production.",
-  aboutPara3: "MCA from Chandigarh University, with hands-on experience across PHP, Node.js, React, Python, FastAPI and more. I've shipped 5+ production apps, built 10+ REST APIs, and integrated real payment systems.",
+  aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2.3 years of software engineering experience and 1+ year of hands-on Generative AI work at Backup Infotech.",
+  aboutPara2: "I build production LLM applications: RAG chatbots on Qdrant vector search, agentic assistants with LangGraph tool calling, and real-time voice agents on the Gemini Live API.",
+  aboutPara3: "MCA from Chandigarh University. Backend foundation in Node.js, Express.js, FastAPI, MongoDB and PostgreSQL, with React.js on the frontend.",
   aboutTags: DEFAULT_TAGS,
   aboutCards: DEFAULT_CARDS,
 }

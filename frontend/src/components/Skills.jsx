@@ -1,19 +1,9 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import axios from 'axios'
+import useApiList from '../lib/useApiList'
+import StatusMessage from './StatusMessage'
 
 export default function Skills() {
-  const [skillGroups, setSkillGroups] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    axios.get(`/api/skills`)
-      .then(r => {
-        if (r.data?.length > 0) setSkillGroups(r.data)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: skillGroups, loading, error, retry } = useApiList('/api/skills')
 
   return (
     <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
@@ -23,13 +13,11 @@ export default function Skills() {
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>Technical Skills</p>
         <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-3">What I Work With</h2>
         <p className="text-sm mb-10" style={{ color: '#888899' }}>
-          Across the full stack — web, backend, databases, and real AI/ML systems.
+          Generative AI, RAG, agentic systems and the full-stack foundation behind them.
         </p>
       </motion.div>
 
-      {loading && (
-        <div className="text-sm" style={{ color: '#888899' }}>Loading skills…</div>
-      )}
+      <StatusMessage loading={loading} error={error} empty={!loading && !error && skillGroups.length === 0} label="skills" onRetry={retry} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {!loading && skillGroups.map((group, i) => (

@@ -5,8 +5,8 @@
       "destination": "https://agam-portfolio.onrender.com/api/:path*"
     },
     {
-      "source": "/(.*)",
-      "destination": "/"
+      "source": "/((?!assets/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }

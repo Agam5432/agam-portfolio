@@ -12,6 +12,7 @@ const {
   trackVisitorpage,
   getVisitorDetail,
 } = require("../controller/analyticsController");
+const requireAuth = require("../middleware/auth");
 const trackVisitor = require("../middleware/trackVisitor");
 
 router.get("/unique-visitors", getUniqueVisitors); // total users
@@ -19,8 +20,8 @@ router.get("/today-visitors", getTodayVisitors); // today active users
 router.get("/total-sessions", getTotalSessions); // total sessions
 router.get("/page-views", getPageViews); // total activity
 router.get("/resume-downloads", getResumeDownloads); // resume clicks
-router.get("/all", getAllVisitors); // all visitors
-router.get("/visitor/:visitorId", getVisitorDetail); 
+router.get("/all", requireAuth, getAllVisitors); // all visitors
+router.get("/visitor/:visitorId", requireAuth, getVisitorDetail); 
 // BAAD MEIN:
 
 router.post("/track-visit", trackVisitor, trackVisitorpage);

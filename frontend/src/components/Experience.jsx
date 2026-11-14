@@ -1,20 +1,10 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Briefcase, Calendar } from 'lucide-react'
-import axios from 'axios'
+import useApiList from '../lib/useApiList'
+import StatusMessage from './StatusMessage'
 
 export default function Experience() {
-  const [experiences, setExperiences] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    axios.get(`/api/experience`)
-      .then(r => {
-        if (r.data?.length > 0) setExperiences(r.data)
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: experiences, loading, error, retry } = useApiList('/api/experience')
 
   return (
     <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
@@ -25,9 +15,7 @@ export default function Experience() {
         <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-12">Where I've Worked</h2>
       </motion.div>
 
-      {loading && (
-        <div className="text-sm" style={{ color: '#888899' }}>Loading experience…</div>
-      )}
+      <StatusMessage loading={loading} error={error} empty={!loading && !error && experiences.length === 0} label="experience" onRetry={retry} />
 
       <div className="space-y-6 max-w-3xl">
         {!loading && experiences.map((exp, idx) => (

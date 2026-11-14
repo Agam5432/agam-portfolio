@@ -4,7 +4,7 @@ const experienceSchema = new mongoose.Schema({
   role: { type: String, required: true },
   company: { type: String, required: true },
   period: { type: String, required: true },
-  location: { type: String, default: "Chandigarh, India" },
+  location: { type: String, default: "Mohali, Punjab, India" },
   points: [String],
   tags: [String],
   order: { type: Number, default: 0 }

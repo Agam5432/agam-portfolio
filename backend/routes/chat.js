@@ -9,7 +9,8 @@ router.post("/", async (req, res) => {
     const { message } = req.body;
      if (
       !message ||
-      typeof message !== "string"
+      typeof message !== "string" ||
+      message.length > 1000
     ) {
       return res.status(400).json({
         success: false,
@@ -27,7 +28,6 @@ router.post("/", async (req, res) => {
     res.json({
       success: true,
       answer,
-      context,
     });
   } catch (err) {
     console.error(err);

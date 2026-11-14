@@ -4,15 +4,22 @@ const Contact = require("../models/Contact");
 const requireAuth = require("../middleware/auth");
 const { Resend } = require("resend");
 
+const esc = (v) => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // POST /api/contact
 router.post("/", async (req, res) => {
   try {
-    const { name, email, message } = req.body;
+    const { name, email, message } = req.body || {};
 
-    if (!name || !email || !message) {
+    if (![name, email, message].every(v => typeof v === "string" && v.trim())) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+    if (name.length > 100 || email.length > 200 || message.length > 3000) {
+      return res.status(400).json({ error: "Input too long" });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      return res.status(400).json({ error: "Invalid email address" });
     }
 
     // Save to MongoDB
@@ -22,12 +29,12 @@ router.post("/", async (req, res) => {
     await resend.emails.send({
       from: "Portfolio <onboarding@resend.dev>",
       to: ["agamtyagi2001@gmail.com"], // 👈 change this
-      subject: `Portfolio Contact: ${name}`,
+      subject: `Portfolio Contact: ${name.replace(/[\r\n]/g, " ").slice(0, 80)}`,
       html: `
         <h3>New Contact from Portfolio</h3>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong> ${message}</p>
+        <p><strong>Name:</strong> ${esc(name)}</p>
+        <p><strong>Email:</strong> ${esc(email)}</p>
+        <p><strong>Message:</strong> ${esc(message).replace(/\n/g, "<br>")}</p>
       `,
     });
 
