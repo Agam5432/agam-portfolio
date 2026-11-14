@@ -1,102 +1,112 @@
 const express = require("express");
 const router = express.Router();
-
 const Groq = require("groq-sdk");
 
 const ChatMessage = require("../models/ChatMessage");
-
-const RESUME = require("../data/resume");
+const { getPortfolioContext } = require("../services/portfolioContext");
 const { detectInterest } = require("../services/leadDetector");
 const { generateDraft } = require("../services/leadDraftGenerator");
 const { sendLeadEmail } = require("../services/emailService");
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const MODEL = "llama-3.3-70b-versatile";
 
 // ============================================================
-// NEXORA SYSTEM PROMPT — answers strictly from the resume text
+// SYSTEM PROMPT — knowledge comes from the admin-managed portfolio data
 // ============================================================
 
-function buildSystemPrompt() {
-  const today = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+function buildSystemPrompt(portfolio) {
+  const today = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   return `
-You are Nexora — Agam Tyagi's personal AI portfolio assistant. You represent Agam to recruiters, collaborators, and visitors, so you should sound confident and knowledgeable about him, not hesitant.
+You are Nexora, Agam Tyagi's personal AI assistant on his portfolio website. You talk to recruiters, collaborators and curious visitors on Agam's behalf. You are warm, natural and confident, like a person who knows Agam's work well, not like a search engine.
 
 TODAY'S DATE: ${today}
 
-YOUR ROLE:
-Answer questions about Agam Tyagi using ONLY the resume provided below. Within it, reason and calculate freely and answer in natural, conversational language, like a person who knows Agam well — do not just copy lines from the resume.
+WHAT YOU KNOW:
+Everything about Agam is in the PORTFOLIO DATA below (his profile, skills, experience, projects, education and contact details). Use only that for facts about Agam. Never invent companies, numbers, dates, links or contact methods. If something is not there, say you don't have that detail and offer to pass the question to Agam by email.
 
-WHAT YOU CAN TALK ABOUT:
-- Skills, projects, experience, education, work history, availability, contact info
-- Nexora itself (this chatbot), as described at the end of the resume
+CONVERSATION:
+- Chat normally. Greetings and small talk ("hi", "how are you", "kaise ho") are welcome: answer briefly and in a friendly way, then gently steer to how you can help with Agam (his work, skills, projects, availability, or reaching him).
+- When asked "tell me about Agam" or "who is he", give a good, complete overview in a few natural sentences: role, experience, what he builds, key skills and a standout project.
+- Reply in the visitor's language style (English, Hindi or Hinglish).
+- Politely decline only things unrelated to Agam that would need real work from you (writing code, general trivia, other people): say you're Agam's assistant and bring the chat back to him.
 
-HOW TO REASON (do this actively, don't hedge):
-1. DATES & DURATION: If the resume gives a period like a date range, calculate the duration yourself using TODAY'S DATE above. State it directly and briefly show the reasoning. Never say "not explicitly mentioned" when raw start/end dates are sitting right there in the resume — that's on you to compute, not the user.
-2. OWNERSHIP OF PROJECTS: Every project listed in the resume is something Agam has actually built. Don't hedge about whether a project was "professional or personal" unless the context explicitly distinguishes this — treat listed projects as his real work by default.
-3. COMBINING FACTS: If an answer requires connecting two parts of the resume (e.g. "what AI tools does he know" = Skills section + tech stacks mentioned inside individual projects), do that combination yourself rather than saying the info isn't available.
-4. TOTAL EXPERIENCE CALCULATION: When asked about Agam's total experience, look at every entry under "Experience" in the resume. For each entry, take its start date from the date range, and its end date (use TODAY'S DATE above if it says "Present"). Calculate the duration for each entry accordingly. If there are multiple experience entries, add up their durations to get the total combined experience, avoiding double-counting if any periods overlap. State the final total clearly with a brief line showing your reasoning.
-5. LATEST / FIRST: Projects are listed newest first, each with its date range. Use the dates to answer "latest project", "most recent project", "first project", etc.
+REASONING:
+1. Durations: compute from date ranges using TODAY'S DATE ("Present" = today) and show the arithmetic in one line. Total experience = sum of experience entries without double counting overlaps.
+2. Everything listed in the projects is Agam's real work. Projects are listed newest first with date ranges: use that for "latest" or "first".
+3. Combine facts across sections yourself (e.g. "what AI tools does he know" = skills + project tech).
 
-CONTACT QUESTION RULE:
-When the user asks a general contact question (e.g. "how can I contact him", "what's his email", "how do I reach Agam"), respond with ONLY email, phone, and LinkedIn — do NOT include the GitHub link in this response, even though it's present in the resume.
-Only mention GitHub if the user specifically asks about it (e.g. "what's his GitHub", "does he have a GitHub profile", "show me his repos").
+CONTACT RULE: for a general "how do I contact him" question give only email, phone and LinkedIn. Mention GitHub only if asked.
+AVAILABILITY RULE: if asked whether he is available or open to work, confirm he is open to opportunities and say explicitly that this includes onsite, office-based and remote roles.
+LEADS: if a visitor wants to hire Agam, collaborate or talk to him, tell them you can email Agam on their behalf (you'll just need their name, email, mobile number and the reason). The email is collected by a separate step, so don't ask for those details yourself.
 
-AVAILABILITY RULE:
-Agam is currently open to hire — available for onsite, office-based, and remote opportunities. If asked whether he is available to hire, open to work, or available for onsite/office/remote roles, give a complete answer that confirms he is available AND explicitly mentions he is open to onsite, office-based, and remote work — do not answer with just "Yes" alone.
+STYLE: plain text only, no markdown (no bold, bullets, numbered lists or headers). Default to 3 to 5 flowing sentences unless the visitor asks for full detail.
 
-WHAT YOU MUST NOT DO:
-- Do not invent facts, numbers, companies, dates, or contact methods that aren't in the resume or directly derivable from it.
-- If specific information (like an email, phone number, or contact method) is genuinely not in the resume, say so plainly. Do NOT invent workarounds, alternate contact methods, or plausible-sounding suggestions that aren't explicitly in the resume.
-- If user asks unrelated things like weather, general knowledge, math, coding help unrelated to Agam's work, jokes, or questions about other people — politely refuse:
-  "I'm Nexora, Agam's personal portfolio assistant."
-- Only say "I couldn't find that in Agam's resume" when the answer truly cannot be found OR reasonably derived from the context — not when it just needs basic math or connecting related facts.
-
-ANSWER STYLE:
-- Friendly, professional, confident — you know Agam's work well
-- Short and clear, no unnecessary hedging or disclaimers
-- Reply in the same language style as the user (English, Hindi, or Hinglish)
-- When you calculate something (like years of experience), briefly show your reasoning in one line
-- Default to 3-5 sentences of natural conversational prose. Do NOT produce numbered feature lists, "Key Features:" style breakdowns, or multi-section spec dumps unless the user explicitly asks for full/detailed information (e.g. "tell me everything about it", "give me a full breakdown").
-- This is a plain-text chat widget — it does NOT render markdown. Never use **bold**, bullet points, numbered lists, or headers. Write in plain flowing sentences. To emphasize something, use word choice, not symbols.
-
-RESUME:
-${RESUME}
+PORTFOLIO DATA:
+${portfolio}
 `.trim();
 }
 
 // ============================================================
-// HELPERS — lead capture flow
+// HELPERS
 // ============================================================
 
-function isAffirmative(text) {
-  return /^(yes|yeah|yep|sure|ok|okay|haan|bilkul|theek hai|krdo|kar do)\b/i.test(text.trim());
-}
+const isAffirmative = (t) => /^(yes|yeah|yep|yup|sure|ok|okay|haan|han|ha|bilkul|theek hai|kar do|krdo|bhej do|send)\b/i.test(t.trim());
+const isNegative = (t) => /^(no|nah|nope|nahi|na|mat|skip|cancel|stop|rehne do)\b/i.test(t.trim());
+const EMAIL_RE = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+const MAIL_INTENT_RE = /(send|write|drop)\b.*\b(mail|email|message)\b|\b(mail|email|message)\s+(him|agam)\b|contact (him|agam)|mail (kar|bhej)|email (kar|bhej)/i;
 
-function isNegative(text) {
-  return /^(no|nah|nope|nahi|mat karo|skip)\b/i.test(text.trim());
+function extractPhone(text) {
+  const digits = text.replace(/[^\d+]/g, "");
+  const count = digits.replace(/\D/g, "").length;
+  return count >= 7 && count <= 15 ? digits : null;
 }
 
 async function extractName(rawText) {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [{
-      role: "user",
-      content: `Extract just the person's name from this message. Respond with ONLY the name, nothing else.\n\nMessage: "${rawText}"`
-    }],
-    max_tokens: 15,
-    temperature: 0,
-  });
-  return response.choices[0]?.message?.content?.trim() || rawText;
+  try {
+    const r = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: `Extract just the person's name from this message. Respond with ONLY the name, nothing else.\n\nMessage: "${rawText}"` }],
+      max_tokens: 15,
+      temperature: 0,
+    });
+    const n = r.choices[0]?.message?.content?.trim();
+    return (n || rawText).slice(0, 60);
+  } catch {
+    return rawText.slice(0, 60);
+  }
 }
+
+const clip = (v, n) => (typeof v === "string" ? v.slice(0, n) : undefined);
+
+function sanitizeLeadState(ls) {
+  const s = ls && typeof ls === "object" ? ls : {};
+  return {
+    stage: clip(s.stage, 40) || "idle",
+    name: clip(s.name, 100),
+    email: clip(s.email, 200),
+    phone: clip(s.phone, 30),
+    reason: clip(s.reason, 600),
+    draft: clip(s.draft, 1500),
+    hasBeenOffered: !!s.hasBeenOffered,
+  };
+}
+
+function composePreview(l) {
+  return [
+    `Subject: New Lead from Portfolio: ${l.name}`,
+    `Name: ${l.name}`,
+    `Email: ${l.email}`,
+    `Mobile: ${l.phone}`,
+    `Reason: ${l.reason}`,
+    ``,
+    `Message:`,
+    l.draft,
+  ].join("\n");
+}
+
+const OFFER_TEXT = "Would you like me to email Agam on your behalf? I'll just need your name, email, mobile number and the reason, then I'll show you the complete email before anything is sent. (yes/no)";
 
 // ============================================================
 // CHAT API
@@ -104,214 +114,125 @@ async function extractName(rawText) {
 
 router.post("/chat", async (req, res) => {
   try {
-    let {
-      message,
-      history = [],
-      leadState = { stage: "idle" },
-    } = req.body || {};
+    let { message, history = [], leadState } = req.body || {};
     if (!Array.isArray(history)) history = [];
     history = history.slice(-10);
+    const text = typeof message === "string" ? message.trim() : "";
 
-    const trimmedMessage = typeof message === "string" ? message.trim() : "";
-
-    if (!trimmedMessage) {
-      return res.status(400).json({
-        error: "Message is required",
-      });
-    }
-
-    if (trimmedMessage.length > 1000) {
-      return res.status(400).json({ error: "Message too long" });
-    }
+    if (!text) return res.status(400).json({ error: "Message is required" });
+    if (text.length > 1000) return res.status(400).json({ error: "Message too long" });
 
     // leadState round-trips through the client, so never trust it blindly.
-    const ls = leadState && typeof leadState === "object" ? leadState : { stage: "idle" };
-    const clip = (v, n) => (typeof v === "string" ? v.slice(0, n) : undefined);
-    leadState = {
-      stage: clip(ls.stage, 40) || "idle",
-      name: clip(ls.name, 100),
-      email: clip(ls.email, 200),
-      rawMessage: clip(ls.rawMessage, 1000),
-      draft: clip(ls.draft, 1500),
-    };
+    const lead = sanitizeLeadState(leadState);
+    let next = { ...lead };
+    const done = (reply, state = next) => res.json({ success: true, reply, leadState: state });
+    const IDLE = { stage: "idle", hasBeenOffered: true };
 
-    let newLeadState = { ...leadState };
-    let reply;
-
-    // ============================================================
-    // LEAD CAPTURE STATE MACHINE
-    // ============================================================
-
-    if (leadState.stage === "awaiting_offer_response") {
-      if (isAffirmative(trimmedMessage)) {
-        newLeadState.stage = "collecting_name";
-        reply = "Great! What's your name?";
-      } else if (isNegative(trimmedMessage)) {
-        newLeadState = { stage: "idle" };
-        reply = "No problem! Let me know if you have any other questions about Agam.";
-      } else {
-        reply = "Just checking — would you like me to send Agam your details? (yes/no)";
+    // ---------------- Lead capture state machine ----------------
+    if (lead.stage !== "idle" && lead.stage !== "sent") {
+      if (lead.stage !== "awaiting_offer_response" && lead.stage !== "awaiting_confirmation" && /^(cancel|stop|skip|rehne do)\b/i.test(text)) {
+        return done("No problem, I've cancelled that. Anything else you'd like to know about Agam?", IDLE);
       }
-      return res.json({ success: true, reply, leadState: newLeadState });
-    }
 
-    if (leadState.stage === "collecting_name") {
-      const extractedName = await extractName(trimmedMessage);
-      newLeadState.name = extractedName;
-      newLeadState.stage = "collecting_email";
-      reply = `Nice to meet you, ${extractedName}! What's your email address so Agam can reply?`;
-      return res.json({ success: true, reply, leadState: newLeadState });
-    }
+      switch (lead.stage) {
+        case "awaiting_offer_response":
+          if (isAffirmative(text)) {
+            next.stage = "collecting_name";
+            return done("Great! What's your name?");
+          }
+          if (isNegative(text)) return done("No problem! Ask me anything else about Agam.", IDLE);
+          return done("Just checking: should I email Agam on your behalf? (yes/no)");
 
-    if (leadState.stage === "collecting_email") {
-      const emailRegex = /[^\s@]+@[^\s@]+\.[^\s@]+/;
-      if (!emailRegex.test(trimmedMessage)) {
-        reply = "That doesn't look like a valid email. Could you re-enter it?";
-        return res.json({ success: true, reply, leadState: newLeadState });
-      }
-      newLeadState.email = trimmedMessage.match(emailRegex)[0];
-      newLeadState.stage = "collecting_message";
-      reply = "Got it! What would you like to tell Agam? (e.g. the opportunity, project, or role you have in mind)";
-      return res.json({ success: true, reply, leadState: newLeadState });
-    }
+        case "collecting_name":
+          next.name = await extractName(text);
+          next.stage = "collecting_email";
+          return done(`Nice to meet you, ${next.name}! What's your email address so Agam can reply?`);
 
-    if (leadState.stage === "collecting_message") {
-      newLeadState.rawMessage = trimmedMessage;
-
-      const draft = await generateDraft({
-        name: newLeadState.name,
-        email: newLeadState.email,
-        rawMessage: trimmedMessage,
-        recentHistory: history,
-      });
-
-      newLeadState.draft = draft;
-      newLeadState.stage = "awaiting_confirmation";
-
-      reply = `Here's the draft I'll send to Agam:\n\n"${draft}"\n\nShould I send this as-is? You can say "yes" to send, or tell me what to change.`;
-      return res.json({ success: true, reply, leadState: newLeadState });
-    }
-
-    if (leadState.stage === "awaiting_confirmation") {
-      const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLeadState.email || "");
-      if (isAffirmative(trimmedMessage) && (!validEmail || !newLeadState.draft || !newLeadState.name)) {
-        newLeadState = { stage: "idle" };
-        reply = "Something went wrong with the details, let's start again — would you like to leave a message for Agam?";
-      } else if (isAffirmative(trimmedMessage)) {
-        try {
-          await sendLeadEmail({
-            visitorName: newLeadState.name,
-            visitorEmail: newLeadState.email,
-            messageBody: newLeadState.draft,
-          });
-          newLeadState = { stage: "sent", hasBeenOffered: true };
-          reply = "Done! I've sent your message to Agam. He'll get back to you soon. 🎉";
-        } catch (mailErr) {
-          console.error("Lead email failed:", mailErr);
-          reply = "Sorry, I couldn't send the message right now. You can email Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.";
+        case "collecting_email": {
+          const m = text.match(EMAIL_RE);
+          if (!m) return done("That doesn't look like a valid email. Could you re-enter it?");
+          next.email = m[0].slice(0, 200);
+          next.stage = "collecting_phone";
+          return done("Thanks! And your mobile number?");
         }
-      } else if (isNegative(trimmedMessage)) {
-        newLeadState = { stage: "idle" };
-        reply = "No problem, I won't send it. Let me know if you'd like to try again later.";
-      } else {
-        const updatedDraft = await generateDraft({
-          name: newLeadState.name,
-          email: newLeadState.email,
-          rawMessage: `${newLeadState.rawMessage}\n\nUser requested this change: ${trimmedMessage}`,
-          recentHistory: history,
-        });
-        newLeadState.draft = updatedDraft;
-        reply = `Updated draft:\n\n"${updatedDraft}"\n\nShould I send this now?`;
+
+        case "collecting_phone": {
+          const phone = extractPhone(text);
+          if (!phone) return done("That doesn't look like a valid mobile number. Could you re-enter it (with country code if outside India)?");
+          next.phone = phone;
+          next.stage = "collecting_reason";
+          return done("Got it. What's the reason you'd like to reach Agam? (e.g. a role, project or collaboration you have in mind)");
+        }
+
+        case "collecting_reason": {
+          next.reason = text;
+          next.draft = await generateDraft({ ...next, recentHistory: history });
+          next.stage = "awaiting_confirmation";
+          return done(`Here's the complete email I'll send to Agam:\n\n${composePreview(next)}\n\nShall I send it as it is? Say "yes" to send, or tell me what to change.`);
+        }
+
+        case "awaiting_confirmation": {
+          const valid = EMAIL_RE.test(next.email || "") && next.name && next.draft && next.phone && next.reason;
+          if (!valid) return done("Something went wrong with the details, so let's start again. Would you like me to email Agam on your behalf?", { stage: "awaiting_offer_response", hasBeenOffered: true });
+          if (isAffirmative(text)) {
+            try {
+              await sendLeadEmail({
+                visitorName: next.name,
+                visitorEmail: next.email,
+                visitorPhone: next.phone,
+                reason: next.reason,
+                messageBody: next.draft,
+              });
+              return done("Done! I've emailed Agam with your details. He'll get back to you soon. 🎉", { stage: "sent", hasBeenOffered: true });
+            } catch (mailErr) {
+              console.error("Lead email failed:", mailErr);
+              return done("Sorry, I couldn't send the email right now. You can reach Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.");
+            }
+          }
+          if (isNegative(text)) return done("No problem, I won't send it. Let me know if you'd like to try again later.", IDLE);
+          next.draft = await generateDraft({ ...next, extra: text, recentHistory: history });
+          return done(`Updated email:\n\n${composePreview(next)}\n\nShall I send this now? (yes/no)`);
+        }
+
+        default:
+          next = { stage: "idle" };
       }
-      return res.json({ success: true, reply, leadState: newLeadState });
     }
 
-    // ============================================================
-    // NORMAL FLOW — answer from the resume (stage is "idle")
-    // ============================================================
-
-    const messages = [];
-
-    messages.push({
-      role: "system",
-      content: buildSystemPrompt(),
+    // ---------------- Normal conversation ----------------
+    const portfolio = await getPortfolioContext();
+    const messages = [{ role: "system", content: buildSystemPrompt(portfolio) }];
+    history.slice(-6).forEach((m) => {
+      if (m && ["user", "assistant"].includes(m.role) && m.content) messages.push({ role: m.role, content: String(m.content).slice(0, 1500) });
     });
+    messages.push({ role: "user", content: text });
 
-    const recentHistory = history.slice(-6);
+    const response = await groq.chat.completions.create({ model: MODEL, messages, max_tokens: 350, temperature: 0.5 });
+    let reply = response.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-    recentHistory.forEach((msg) => {
-      if (msg.role && msg.content && ["user", "assistant"].includes(msg.role)) {
-        messages.push({
-          role: msg.role,
-          content: String(msg.content),
-        });
+    // Offer to email Agam when the visitor shows intent (once per session).
+    if (!lead.hasBeenOffered) {
+      let interested = MAIL_INTENT_RE.test(text);
+      if (!interested) {
+        try { interested = await detectInterest(text, history); } catch { interested = false; }
       }
-    });
-
-    messages.push({
-      role: "user",
-      content: trimmedMessage,
-    });
-
-    // ===========================
-    // GROQ LLM CALL
-    // ===========================
-
-    const response = await groq.chat.completions.create({
-      model: MODEL,
-      messages,
-      max_tokens: 300,
-      temperature: 0.4,
-    });
-
-    reply =
-      response.choices[0]?.message?.content ||
-      "Sorry, I couldn't generate a response.";
-
-    // ============================================================
-    // INTEREST DETECTION — only if not already offered this session
-    // ============================================================
-
-    if (leadState.stage === "idle" && !leadState.hasBeenOffered) {
-      const interested = await detectInterest(trimmedMessage, history);
       if (interested) {
-        reply +=
-          "\n\nBy the way — it sounds like you might be interested in working with Agam. Would you like me to send him your details?";
-        newLeadState.stage = "awaiting_offer_response";
-        newLeadState.hasBeenOffered = true;
+        reply += `\n\n${OFFER_TEXT}`;
+        next = { stage: "awaiting_offer_response", hasBeenOffered: true };
       }
     }
-
-    // ===========================
-    // SAVE CHAT LOG
-    // ===========================
 
     try {
-      await ChatMessage.create({
-        userMessage: trimmedMessage,
-        botReply: reply,
-      });
+      await ChatMessage.create({ userMessage: text, botReply: reply });
     } catch (dbErr) {
       console.log("DB log error:", dbErr.message);
     }
 
-    res.json({
-      success: true,
-      reply,
-      leadState: newLeadState,
-    });
+    return res.json({ success: true, reply, leadState: next });
   } catch (err) {
     console.error("Nexora error:", err);
-
-    if (err.status === 429) {
-      return res.status(429).json({
-        error: "Rate limit reached. Please try again.",
-      });
-    }
-
-    res.status(500).json({
-      error: "Something went wrong.",
-    });
+    if (err.status === 429) return res.status(429).json({ error: "Rate limit reached. Please try again." });
+    return res.status(500).json({ error: "Something went wrong." });
   }
 });
 

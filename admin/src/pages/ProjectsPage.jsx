@@ -4,7 +4,7 @@ import { Plus, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react'
 import { api, Field, TextArea, Toggle, SaveBtn } from './Shared'
 
 function ProjectForm({ token, initial, onSave, onCancel }) {
-  const blank = { title: '', description: '', icon: '🚀', tags: '', stack: '', liveUrl: '', githubUrl: '', featured: false, visible: true, order: 0 }
+  const blank = { title: '', description: '', icon: '🚀', period: '', tags: '', stack: '', liveUrl: '', githubUrl: '', featured: false, visible: true, order: 0 }
   const [form, setForm] = useState(initial ? {
     ...initial,
     tags: initial.tags?.join(', ') || '',
@@ -40,6 +40,7 @@ function ProjectForm({ token, initial, onSave, onCancel }) {
       <h3 className="text-base font-bold mb-5">{initial ? 'Edit Project' : 'Add New Project'}</h3>
       <form onSubmit={submit} className="space-y-3">
         <Field label="Title" name="title" value={form.title} onChange={handle} placeholder="Project Name" />
+        <Field label="Period (e.g. Oct 2026 – Present)" name="period" value={form.period || ''} onChange={handle} placeholder="Jun 2026 – Jul 2026" />
         <Field label="Icon (emoji)" name="icon" value={form.icon} onChange={handle} placeholder="🚀" />
         <Field label="Tags (comma separated)" name="tags" value={form.tags} onChange={handle} placeholder="AI, Web" />
         <Field label="Tech Stack (comma separated)" name="stack" value={form.stack} onChange={handle} placeholder="React, Node.js" />

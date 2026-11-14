@@ -14,7 +14,7 @@ async function send(payload) {
   if (error) throw new Error(`Resend error: ${error.message || JSON.stringify(error)}`);
 }
 
-async function sendLeadEmail({ visitorName, visitorEmail, messageBody }) {
+async function sendLeadEmail({ visitorName, visitorEmail, visitorPhone, reason, messageBody }) {
   await send({
     to: [OWNER_EMAIL],
     replyTo: visitorEmail,
@@ -22,6 +22,8 @@ async function sendLeadEmail({ visitorName, visitorEmail, messageBody }) {
     html: `<h3>New lead from your portfolio chatbot (Nexora)</h3>
       <p><strong>Name:</strong> ${esc(visitorName)}</p>
       <p><strong>Email:</strong> ${esc(visitorEmail)}</p>
+      <p><strong>Mobile:</strong> ${esc(visitorPhone || "—")}</p>
+      <p><strong>Reason:</strong> ${esc(reason || "—")}</p>
       <p><strong>Message:</strong><br>${esc(messageBody).replace(/\n/g, "<br>")}</p>`,
   });
 }

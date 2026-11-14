@@ -48,7 +48,8 @@ function ProjectCard({ project, i }) {
       </div>
 
       <div>
-        <h3 className="text-base font-bold leading-snug mb-2">{project.title}</h3>
+        <h3 className="text-base font-bold leading-snug mb-1">{project.title}</h3>
+        {project.period && <p className="text-xs mb-2" style={{ color: '#6c63ff' }}>{project.period}</p>}
         <p className="text-xs leading-relaxed" style={{ color: '#888899' }}>{project.description}</p>
       </div>
 

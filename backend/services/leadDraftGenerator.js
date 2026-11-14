@@ -1,33 +1,30 @@
 const Groq = require("groq-sdk");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-async function generateDraft({ name, email, rawMessage, recentHistory }) {
-  const conversationSnippet = recentHistory
-    .slice(-6)
-    .map((m) => `${m.role}: ${m.content}`)
-    .join("\n");
-
+// Writes the message body of the lead email, in the visitor's voice, to Agam.
+async function generateDraft({ name, email, phone, reason, extra, recentHistory = [] }) {
+  const convo = recentHistory.slice(-6).map(m => `${m.role}: ${m.content}`).join("\n");
   const prompt = `
-You are drafting a short, professional lead email on behalf of a website visitor to send to Agam Tyagi (a developer).
+Write the body of a short, professional email from a website visitor to Agam Tyagi (an AI engineer). The visitor's chatbot is sending it on their behalf.
 
 Visitor name: ${name}
 Visitor email: ${email}
-Visitor's raw message/intent: ${rawMessage}
+Visitor mobile: ${phone}
+Reason for contacting: ${reason}
+${extra ? `Visitor's requested change: ${extra}` : ""}
 
-Relevant conversation context:
-${conversationSnippet}
+Conversation context:
+${convo || "(none)"}
 
-Write a concise, professional message (3-5 sentences) summarizing what the visitor wants, based on their message and the conversation context. Write it in first person, as if the visitor is speaking. Do not add a greeting or sign-off, just the message body.
+Rules: first person as the visitor, 3-5 sentences, clearly state what they want and invite Agam to reply. Use only the facts above; do not invent companies, roles, dates or numbers. No greeting line, no sign-off, no subject line. Plain text.
   `.trim();
-
-  const response = await groq.chat.completions.create({
+  const r = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [{ role: "user", content: prompt }],
-    max_tokens: 200,
+    max_tokens: 250,
     temperature: 0.4,
   });
-
-  return response.choices[0]?.message?.content?.trim() || rawMessage;
+  return r.choices[0]?.message?.content?.trim() || reason;
 }
 
 module.exports = { generateDraft };

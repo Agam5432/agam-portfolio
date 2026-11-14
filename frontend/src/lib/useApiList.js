@@ -23,8 +23,8 @@ async function getWithRetry(url, tries = 4) {
   throw lastErr
 }
 
-export default function useApiList(url) {
-  const [data, setData] = useState([])
+export default function useApiList(url, { object = false } = {}) {
+  const [data, setData] = useState(object ? null : [])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [attempt, setAttempt] = useState(0)
@@ -34,7 +34,7 @@ export default function useApiList(url) {
     setLoading(true)
     setError(null)
     getWithRetry(url)
-      .then(d => { if (!cancelled) setData(Array.isArray(d) ? d : []) })
+      .then(d => { if (!cancelled) setData(object ? d : Array.isArray(d) ? d : []) })
       .catch(e => { if (!cancelled) setError(e) })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
