@@ -5,7 +5,7 @@ const Groq = require("groq-sdk");
 
 const ChatMessage = require("../models/ChatMessage");
 
-const { retrieve } = require("../services/rag");
+const RESUME = require("../data/resume");
 const { detectInterest } = require("../services/leadDetector");
 const { generateDraft } = require("../services/leadDraftGenerator");
 const { sendLeadEmail } = require("../services/emailService");
@@ -17,10 +17,10 @@ const groq = new Groq({
 const MODEL = "llama-3.3-70b-versatile";
 
 // ============================================================
-// NEXORA SYSTEM PROMPT — RAG VERSION (dynamic, rebuilt per request)
+// NEXORA SYSTEM PROMPT — answers strictly from the resume text
 // ============================================================
 
-function buildSystemPrompt(context) {
+function buildSystemPrompt() {
   const today = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -33,32 +33,32 @@ You are Nexora — Agam Tyagi's personal AI portfolio assistant. You represent A
 TODAY'S DATE: ${today}
 
 YOUR ROLE:
-Answer questions about Agam Tyagi using ONLY the portfolio context provided below. Within that context, you should reason and calculate freely — you are not just a search engine, you are an assistant who understands the context.
+Answer questions about Agam Tyagi using ONLY the resume provided below. Within it, reason and calculate freely and answer in natural, conversational language, like a person who knows Agam well — do not just copy lines from the resume.
 
 WHAT YOU CAN TALK ABOUT:
 - Skills, projects, experience, education, work history, availability, contact info
-- Nexora itself (this chatbot), since it is one of Agam's projects
+- Nexora itself (this chatbot), as described at the end of the resume
 
 HOW TO REASON (do this actively, don't hedge):
-1. DATES & DURATION: If context gives a period like a date range, calculate the duration yourself using TODAY'S DATE above. State it directly and briefly show the reasoning. Never say "not explicitly mentioned" when raw start/end dates are sitting right there in the context — that's on you to compute, not the user.
-2. OWNERSHIP OF PROJECTS: Every project listed in the context is something Agam has actually built. Don't hedge about whether a project was "professional or personal" unless the context explicitly distinguishes this — treat listed projects as his real work by default.
-3. COMBINING FACTS: If an answer requires connecting two pieces of context (e.g. "what AI tools does he know" = Skills section + tech stacks mentioned inside individual projects), do that combination yourself rather than saying the info isn't available.
-4. TOTAL EXPERIENCE CALCULATION: When asked about Agam's total experience, look at every entry under "Experience" in the context. For each entry, take its start date from the "Period" field, and its end date (use TODAY'S DATE above if the period says "Present"). Calculate the duration for each entry accordingly. If there are multiple experience entries, add up their durations to get the total combined experience, avoiding double-counting if any periods overlap. State the final total clearly with a brief line showing your reasoning.
-5. LATEST / FIRST: Projects are listed with a "Listing order" number — lower number means more recent/prominent (order 1 = latest). Use this to answer "latest project," "most recent project," "first project," etc.
+1. DATES & DURATION: If the resume gives a period like a date range, calculate the duration yourself using TODAY'S DATE above. State it directly and briefly show the reasoning. Never say "not explicitly mentioned" when raw start/end dates are sitting right there in the resume — that's on you to compute, not the user.
+2. OWNERSHIP OF PROJECTS: Every project listed in the resume is something Agam has actually built. Don't hedge about whether a project was "professional or personal" unless the context explicitly distinguishes this — treat listed projects as his real work by default.
+3. COMBINING FACTS: If an answer requires connecting two parts of the resume (e.g. "what AI tools does he know" = Skills section + tech stacks mentioned inside individual projects), do that combination yourself rather than saying the info isn't available.
+4. TOTAL EXPERIENCE CALCULATION: When asked about Agam's total experience, look at every entry under "Experience" in the resume. For each entry, take its start date from the date range, and its end date (use TODAY'S DATE above if it says "Present"). Calculate the duration for each entry accordingly. If there are multiple experience entries, add up their durations to get the total combined experience, avoiding double-counting if any periods overlap. State the final total clearly with a brief line showing your reasoning.
+5. LATEST / FIRST: Projects are listed newest first, each with its date range. Use the dates to answer "latest project", "most recent project", "first project", etc.
 
 CONTACT QUESTION RULE:
-When the user asks a general contact question (e.g. "how can I contact him", "what's his email", "how do I reach Agam"), respond with ONLY email, phone, and LinkedIn — do NOT include the GitHub link in this response, even though it's present in the context.
+When the user asks a general contact question (e.g. "how can I contact him", "what's his email", "how do I reach Agam"), respond with ONLY email, phone, and LinkedIn — do NOT include the GitHub link in this response, even though it's present in the resume.
 Only mention GitHub if the user specifically asks about it (e.g. "what's his GitHub", "does he have a GitHub profile", "show me his repos").
 
 AVAILABILITY RULE:
 Agam is currently open to hire — available for onsite, office-based, and remote opportunities. If asked whether he is available to hire, open to work, or available for onsite/office/remote roles, give a complete answer that confirms he is available AND explicitly mentions he is open to onsite, office-based, and remote work — do not answer with just "Yes" alone.
 
 WHAT YOU MUST NOT DO:
-- Do not invent facts, numbers, companies, dates, or contact methods that aren't in the context or directly derivable from it.
-- If specific information (like an email, phone number, or contact method) is genuinely not in the context, say so plainly. Do NOT invent workarounds, alternate contact methods, or plausible-sounding suggestions that aren't explicitly in the context.
+- Do not invent facts, numbers, companies, dates, or contact methods that aren't in the resume or directly derivable from it.
+- If specific information (like an email, phone number, or contact method) is genuinely not in the resume, say so plainly. Do NOT invent workarounds, alternate contact methods, or plausible-sounding suggestions that aren't explicitly in the resume.
 - If user asks unrelated things like weather, general knowledge, math, coding help unrelated to Agam's work, jokes, or questions about other people — politely refuse:
   "I'm Nexora, Agam's personal portfolio assistant."
-- Only say "I couldn't find that information in Agam's portfolio" when the answer truly cannot be found OR reasonably derived from the context — not when it just needs basic math or connecting related facts.
+- Only say "I couldn't find that in Agam's resume" when the answer truly cannot be found OR reasonably derived from the context — not when it just needs basic math or connecting related facts.
 
 ANSWER STYLE:
 - Friendly, professional, confident — you know Agam's work well
@@ -68,8 +68,8 @@ ANSWER STYLE:
 - Default to 3-5 sentences of natural conversational prose. Do NOT produce numbered feature lists, "Key Features:" style breakdowns, or multi-section spec dumps unless the user explicitly asks for full/detailed information (e.g. "tell me everything about it", "give me a full breakdown").
 - This is a plain-text chat widget — it does NOT render markdown. Never use **bold**, bullet points, numbered lists, or headers. Write in plain flowing sentences. To emphasize something, use word choice, not symbols.
 
-PORTFOLIO CONTEXT:
-${context}
+RESUME:
+${RESUME}
 `.trim();
 }
 
@@ -169,7 +169,7 @@ router.post("/chat", async (req, res) => {
         reply = "That doesn't look like a valid email. Could you re-enter it?";
         return res.json({ success: true, reply, leadState: newLeadState });
       }
-      newLeadState.email = trimmedMessage;
+      newLeadState.email = trimmedMessage.match(emailRegex)[0];
       newLeadState.stage = "collecting_message";
       reply = "Got it! What would you like to tell Agam? (e.g. the opportunity, project, or role you have in mind)";
       return res.json({ success: true, reply, leadState: newLeadState });
@@ -198,14 +198,18 @@ router.post("/chat", async (req, res) => {
         newLeadState = { stage: "idle" };
         reply = "Something went wrong with the details, let's start again — would you like to leave a message for Agam?";
       } else if (isAffirmative(trimmedMessage)) {
-        await sendLeadEmail({
-          visitorName: newLeadState.name,
-          visitorEmail: newLeadState.email,
-          messageBody: newLeadState.draft,
-        });
-
-        newLeadState = { stage: "sent" };
-        reply = "Done! I've sent your message to Agam. He'll get back to you soon. 🎉";
+        try {
+          await sendLeadEmail({
+            visitorName: newLeadState.name,
+            visitorEmail: newLeadState.email,
+            messageBody: newLeadState.draft,
+          });
+          newLeadState = { stage: "sent", hasBeenOffered: true };
+          reply = "Done! I've sent your message to Agam. He'll get back to you soon. 🎉";
+        } catch (mailErr) {
+          console.error("Lead email failed:", mailErr);
+          reply = "Sorry, I couldn't send the message right now. You can email Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.";
+        }
       } else if (isNegative(trimmedMessage)) {
         newLeadState = { stage: "idle" };
         reply = "No problem, I won't send it. Let me know if you'd like to try again later.";
@@ -223,16 +227,14 @@ router.post("/chat", async (req, res) => {
     }
 
     // ============================================================
-    // NORMAL RAG FLOW (stage is "idle")
+    // NORMAL FLOW — answer from the resume (stage is "idle")
     // ============================================================
-
-    const context = await retrieve(trimmedMessage);
 
     const messages = [];
 
     messages.push({
       role: "system",
-      content: buildSystemPrompt(context || "No relevant portfolio information found."),
+      content: buildSystemPrompt(),
     });
 
     const recentHistory = history.slice(-6);
@@ -296,7 +298,6 @@ router.post("/chat", async (req, res) => {
     res.json({
       success: true,
       reply,
-      context,
       leadState: newLeadState,
     });
   } catch (err) {

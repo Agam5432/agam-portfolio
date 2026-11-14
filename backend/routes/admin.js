@@ -68,14 +68,14 @@ router.post("/login", async (req, res) => {
 });
 
 // POST /api/admin/forgot-password
-// Emails a 6-digit code to ADMIN_RESET_EMAIL (falls back to EMAIL_USER).
+// Emails a 6-digit code to ADMIN_RESET_EMAIL (falls back to OWNER_EMAIL).
 // The address is never taken from the request, so nobody can redirect the code.
 router.post("/forgot-password", forgotLimiter, async (req, res) => {
   try {
     const username = process.env.ADMIN_USERNAME;
-    const to = process.env.ADMIN_RESET_EMAIL || process.env.EMAIL_USER;
+    const to = process.env.ADMIN_RESET_EMAIL || process.env.OWNER_EMAIL || "agamtyagi2001@gmail.com";
     if (!username || !to || !process.env.JWT_SECRET) {
-      console.error("Password reset not configured (ADMIN_USERNAME, EMAIL_USER, JWT_SECRET)");
+      console.error("Password reset not configured (ADMIN_USERNAME, JWT_SECRET)");
       return res.status(500).json({ error: "Password reset is not configured." });
     }
 

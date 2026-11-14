@@ -4,7 +4,6 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const analyticsRoutes = require("./routes/analytics");
-const chatbot = require("./routes/chat");
 require("dotenv").config();
 
 const app = express();
@@ -36,7 +35,6 @@ const mk = (windowMs, max, error) => rateLimit({
 });
 // Generous global cap for public reads; stricter caps on expensive/abusable routes.
 const globalLimiter = mk(60 * 1000, 300, "Too many requests, please slow down.");
-const chatLimiter = mk(60 * 1000, 10, "Too many chat requests, please try again later.");
 const contactLimiter = mk(60 * 60 * 1000, 5, "Too many messages, please try again later.");
 const loginLimiter = mk(15 * 60 * 1000, 10, "Too many login attempts, please try again later.");
 
@@ -50,7 +48,6 @@ app.use("/api/admin/login", loginLimiter);
 app.use("/api/projects", require("./routes/projects"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api/chat", chatLimiter, chatbot);
 
 // ── NEW DYNAMIC ROUTES ──────────────────────────────────────
 app.use("/api/profile", require("./routes/profile"));

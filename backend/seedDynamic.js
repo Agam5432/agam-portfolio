@@ -34,7 +34,7 @@ async function seed() {
     console.log("ℹ️  Profile left untouched (use --profile to overwrite)");
   }
   await mongoose.disconnect();
-  console.log("✅ Done. Re-run `node scripts/ingestPortfolio.js` to refresh the chatbot index.");
+  console.log("✅ Done.");
 }
 
 seed().catch(err => { console.error(err); process.exit(1); });

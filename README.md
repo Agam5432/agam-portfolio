@@ -4,7 +4,7 @@ Full portfolio website with:
 - React frontend with Framer Motion animations
 - Node.js + Express backend
 - MongoDB database
-- Nexora AI chatbot (Groq powered)
+- Nexora AI chatbot (Groq powered, answers from the resume)
 - Admin panel to manage everything
 
 ---
@@ -139,6 +139,8 @@ Content (profile, skills, experience, education, projects) lives in `backend/dat
 cd backend
 node seedDynamic.js            # replace skills/experience/education/projects
 node seedDynamic.js --profile  # also overwrite hero/about profile
-node scripts/ingestPortfolio.js  # refresh the chatbot (Qdrant) index afterwards
 ```
 Copy `backend/.env.example` to `backend/.env` and fill it in. On Render, the Playwright dependency needs its browser installed (`npx playwright install chromium`) only if you run the crawler there.
+
+## Chatbot (Nexora)
+Nexora answers only from the resume text in `backend/data/resume.js` (no vector DB / RAG). Update that file whenever the resume changes. Lead and password-reset emails are sent with Resend (`RESEND_API_KEY`); Gmail SMTP does not work on Render.
