@@ -24,6 +24,19 @@ TODAY'S DATE: ${today}
 WHAT YOU KNOW:
 Everything about Agam is in the PORTFOLIO DATA below (his profile, skills, experience, projects, education and contact details). Use only that for facts about Agam. Never invent companies, numbers, dates, links or contact methods. If something is not there, say you don't have that detail and offer to pass the question to Agam by email.
 
+ANSWER WHAT WAS ACTUALLY ASKED (most important): read the visitor's latest message together with the recent chat and respond to its real meaning, like a thoughtful person would. Do not fall back on a stock sentence. Never repeat a sentence or phrasing you already used earlier in this chat. Different questions get different answers, even when they are off-topic or emotional.
+
+GROUNDING:
+- State only what the PORTFOLIO DATA says. Do NOT claim a project is "in production", "live", "deployed", "used by real customers/users", or give users, revenue, scale or results unless the data says so for that exact project. If the visitor asks and the data is silent, say plainly that you don't have that detail and that Agam can tell them directly.
+- Call something "production" only for what the data itself labels production. Never say "N production projects" as a count; say how many projects are listed.
+- If asked for a link and the project has none in the data, say there is no public link listed, and that the visitor can ask Agam through his email or LinkedIn.
+
+TOUGH OR RUDE VISITORS:
+- If a visitor doubts or criticises Agam ("hire karne layak nahi lagta", "time waste kar raha hai"), don't just agree or flatter. Respond to the doubt with specific facts from the data (what he built, how long, with which tools) and ask what they are unsure about. Stay calm, never defensive, never argue.
+- If a visitor says they don't want any information, accept it politely in one short line and stop pushing.
+- If a visitor insults Agam or you, or uses abusive language: stay composed, don't lecture, don't echo or repeat the abuse. Reply with one short human line that sets a calm boundary (for example that you're happy to keep helping but not with abuse), then leave the door open. If the abuse continues, keep it even shorter and don't repeat the same wording.
+- Never use filler like "I understand your feelings" or "Main samajh sakta hoon ki aapke kuch concerns hain". Say something real instead.
+
 CONVERSATION:
 - Chat normally. Greetings and small talk ("hi", "how are you", "kaise ho") are welcome: answer briefly and in a friendly way, then gently steer to how you can help with Agam (his work, skills, projects, availability, or reaching him).
 - When asked "tell me about Agam" or "who is he", give a good, complete overview in a few natural sentences: role, experience, what he builds, key skills and a standout project.
@@ -32,7 +45,7 @@ CONVERSATION:
 
 REASONING:
 1. Durations: compute from date ranges using TODAY'S DATE ("Present" = today) and show the arithmetic in one line. Total experience = sum of experience entries without double counting overlaps.
-2. Everything listed in the projects is Agam's real work. Projects are listed newest first with date ranges: use that for "latest" or "first".
+2. Everything listed in the projects is Agam's real work (but that does not mean it is deployed or has users; see GROUNDING). Projects are listed newest first with date ranges: use that for "latest" or "first".
 3. Combine facts across sections yourself (e.g. "what AI tools does he know" = skills + project tech).
 
 CONTACT RULE: for a general "how do I contact him" question give only email, phone and LinkedIn. Mention GitHub only if asked.
@@ -134,6 +147,11 @@ const MSG = {
     sent: "Done! I've emailed Agam with your details. He'll get back to you soon. 🎉",
     sendFail: "Sorry, I couldn't send the email right now. You can reach Agam directly at agamtyagi2001@gmail.com, or say \"yes\" to try again.",
     restart: "Something went wrong with the details, so let's start again. Would you like me to email Agam on your behalf?",
+    resume: {
+      collecting_name: "Whenever you're ready, tell me your name and we'll carry on with the email to Agam.",
+      collecting_email: "Whenever you're ready, send me your email address and we'll carry on.",
+      collecting_phone: "Whenever you're ready, send me your mobile number and we'll carry on.",
+    },
   },
   hi: {
     offer: "Kya main aapki taraf se Agam ko email kar doon? Bas aapka naam, email, mobile number aur reason chahiye, phir bhejne se pehle poora email aapko dikha dunga. (haan/nahi)",
@@ -152,9 +170,48 @@ const MSG = {
     sent: "Ho gaya! Maine aapki details ke saath Agam ko email bhej diya hai. Woh jald hi aapko reply karenge. 🎉",
     sendFail: "Sorry, abhi email nahi bhej paya. Aap Agam ko seedha agamtyagi2001@gmail.com par mail kar sakte hain, ya dobara try karne ke liye \"haan\" bolo.",
     restart: "Details me kuch gadbad ho gayi, chalo dobara shuru karte hain. Kya main aapki taraf se Agam ko email kar du?",
+    resume: {
+      collecting_name: "Jab ready ho, apna naam bata dena, phir Agam ko email wala kaam aage badhate hain.",
+      collecting_email: "Jab ready ho, apna email address bhej dena, phir aage badhate hain.",
+      collecting_phone: "Jab ready ho, apna mobile number bhej dena, phir aage badhate hain.",
+    },
   },
 };
 
+
+// Looks like the visitor is asking something rather than giving the requested detail.
+const QUESTION_RE = /\?|^\s*(kya|kaise|kese|kyu|kyun|kon|kaun|kitna|kitne|kab|kahan|kaha|what|who|how|why|when|where|which|can you|do you|does|is |are |tell|explain|btao|batao|bataiye|link|projects?)\b/i;
+
+async function converse(text, history, lead, next) {
+  const portfolio = await getPortfolioContext();
+  const messages = [{ role: "system", content: buildSystemPrompt(portfolio) }];
+  history.slice(-6).forEach((m) => {
+    if (m && ["user", "assistant"].includes(m.role) && m.content) messages.push({ role: m.role, content: String(m.content).slice(0, 1500) });
+  });
+  messages.push({ role: "user", content: text });
+
+  let reply = (await complete({ messages, maxTokens: 1500, temperature: 0.6 })) || "Sorry, I couldn't generate a response.";
+
+  // Offer to email Agam when the visitor shows intent (once, unless an earlier offer was ignored).
+  if (!lead.hasBeenOffered) {
+    let interested = MAIL_INTENT_RE.test(text);
+    if (!interested) {
+      try { interested = await detectInterest(text, history); } catch { interested = false; }
+    }
+    if (interested) {
+      const lang = detectLang(text, history);
+      reply += `\n\n${MSG[lang].offer}`;
+      next = { stage: "awaiting_offer_response", hasBeenOffered: true, lang };
+    }
+  }
+
+  try {
+    await ChatMessage.create({ userMessage: text, botReply: reply });
+  } catch (dbErr) {
+    console.log("DB log error:", dbErr.message);
+  }
+  return { reply, next };
+}
 
 // ============================================================
 // CHAT API
@@ -183,6 +240,14 @@ router.post("/chat", async (req, res) => {
         return done(T.cancelled, IDLE);
       }
 
+      // A question in the middle of collecting details: answer it, then gently resume.
+      const expects = { collecting_name: null, collecting_email: EMAIL_RE, collecting_phone: { test: (t) => !!extractPhone(t) } }[lead.stage];
+      if (lead.stage in { collecting_name: 1, collecting_email: 1, collecting_phone: 1 } && (QUESTION_RE.test(text) || (expects && text.split(/\s+/).length >= 3)) && !(expects && expects.test(text))) {
+        const out = await converse(text, history, { ...lead, hasBeenOffered: true }, { ...lead });
+        const resume = MSG[lead.lang].resume[lead.stage];
+        return done(`${out.reply}\n\n${resume}`, { ...lead });
+      }
+
       switch (lead.stage) {
         case "awaiting_offer_response":
           if (isAffirmative(text)) {
@@ -190,7 +255,12 @@ router.post("/chat", async (req, res) => {
             return done(T.askName);
           }
           if (isNegative(text)) return done(T.declineOffer, IDLE);
-          return done(T.offerRepeat);
+          {
+            // Visitor moved on to something else: answer it normally instead of nagging.
+            // hasBeenOffered stays false so the offer can come back when they show hiring intent again.
+            const out = await converse(text, history, { ...lead, hasBeenOffered: false }, { stage: "idle", hasBeenOffered: false, lang: lead.lang });
+            return done(out.reply, out.next);
+          }
 
         case "collecting_name":
           next.name = await extractName(text);
@@ -249,35 +319,8 @@ router.post("/chat", async (req, res) => {
     }
 
     // ---------------- Normal conversation ----------------
-    const portfolio = await getPortfolioContext();
-    const messages = [{ role: "system", content: buildSystemPrompt(portfolio) }];
-    history.slice(-6).forEach((m) => {
-      if (m && ["user", "assistant"].includes(m.role) && m.content) messages.push({ role: m.role, content: String(m.content).slice(0, 1500) });
-    });
-    messages.push({ role: "user", content: text });
-
-    let reply = (await complete({ messages, maxTokens: 1500, temperature: 0.5 })) || "Sorry, I couldn't generate a response.";
-
-    // Offer to email Agam when the visitor shows intent (once per session).
-    if (!lead.hasBeenOffered) {
-      let interested = MAIL_INTENT_RE.test(text);
-      if (!interested) {
-        try { interested = await detectInterest(text, history); } catch { interested = false; }
-      }
-      if (interested) {
-        const lang = detectLang(text, history);
-        reply += `\n\n${MSG[lang].offer}`;
-        next = { stage: "awaiting_offer_response", hasBeenOffered: true, lang };
-      }
-    }
-
-    try {
-      await ChatMessage.create({ userMessage: text, botReply: reply });
-    } catch (dbErr) {
-      console.log("DB log error:", dbErr.message);
-    }
-
-    return res.json({ success: true, reply, leadState: next });
+    const out = await converse(text, history, lead, next);
+    return res.json({ success: true, reply: out.reply, leadState: out.next });
   } catch (err) {
     console.error("Nexora error:", err);
     if (err.status === 429) return res.status(429).json({ error: "Rate limit reached. Please try again." });
