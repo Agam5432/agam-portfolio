@@ -1,3 +1,4 @@
+import { trackResumeDownload } from "../analytics";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Download, ArrowRight, Github, Linkedin } from "lucide-react";
@@ -121,6 +122,7 @@ function CodeEditor() {
 
 export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
+  const [hasUploadedResume, setHasUploadedResume] = useState(false);
   const navigate = useNavigate();
 
   // 🛡 Guard against React StrictMode double-firing useEffect in dev mode,
@@ -134,14 +136,18 @@ export default function Hero({ goTo }) {
     axios.get(`/api/profile`, { withCredentials: true })
       .then((r) => setData({ ...DEFAULTS, ...r.data }))
       .catch(() => {});
+    axios.get(`/api/resume/info`)
+      .then((r) => setHasUploadedResume(Boolean(r.data?.exists)))
+      .catch(() => {});
   }, []);
 
   // 📥 Track resume downloads in the backend, then let the browser proceed
   // with the actual file download via the <a download> tag.
-  const handleResumeDownload = () => {
-    axios.post(`/api/analytics/resume-download`, {}, { withCredentials: true })
-      .catch(() => {}); // never block the download if tracking fails
-  };
+  const handleResumeDownload = () => trackResumeDownload();
+
+  // Resume uploaded from the admin panel wins; otherwise the profile URL / bundled static file.
+  const baseURL = axios.defaults.baseURL || "";
+  const resumeHref = hasUploadedResume ? `${baseURL}/api/resume` : data.resumeUrl;
 
   const nameParts = data.name.split(" ");
   const firstName = nameParts[0];
@@ -210,7 +216,7 @@ export default function Hero({ goTo }) {
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               Let's Talk
             </button>
-            <a href={data.resumeUrl} download onClick={handleResumeDownload}
+            <a href={resumeHref} download onClick={handleResumeDownload}
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               <Download size={15} /> Resume
             </a>

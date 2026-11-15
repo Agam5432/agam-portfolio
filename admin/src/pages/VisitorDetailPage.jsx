@@ -8,7 +8,8 @@ export default function VisitorDetailPage({ token, setTab, visitorId }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!visitorId) returngit
+    setLoading(true)
+    if (!visitorId) return
     api(token).get(`/api/analytics/visitor/${visitorId}`)
       .then(r => setVisitor(r.data))
       .catch(err => console.error('Failed to load visitor detail', err))
@@ -54,7 +55,7 @@ export default function VisitorDetailPage({ token, setTab, visitorId }) {
             {visitor.device === 'mobile'
               ? <Smartphone size={14} style={{ color: '#00d4ff' }} />
               : <Monitor size={14} style={{ color: '#00d4ff' }} />}
-            <span className="text-sm">{visitor.device || 'Desktop'}</span>
+            <span className="text-sm capitalize">{visitor.device || 'desktop'}</span>
           </div>
           <p className="text-xs" style={{ color: '#888899' }}>{visitor.browser || '—'}</p>
           <p className="text-xs" style={{ color: '#888899' }}>OS: {visitor.os || '—'}</p>
@@ -74,9 +75,9 @@ export default function VisitorDetailPage({ token, setTab, visitorId }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Download size={12} style={{ color: visitor.resumeDownloaded ? '#10b981' : '#888899' }} />
-            <span className="text-xs" style={{ color: visitor.resumeDownloaded ? '#10b981' : '#888899' }}>
-              Resume {visitor.resumeDownloaded ? 'Downloaded' : 'Not Downloaded'}
+            <Download size={12} style={{ color: visitor.resumeDownloads > 0 ? '#10b981' : '#888899' }} />
+            <span className="text-xs" style={{ color: visitor.resumeDownloads > 0 ? '#10b981' : '#888899' }}>
+              Resume {visitor.resumeDownloads > 0 ? `downloaded ×${visitor.resumeDownloads}` : 'not downloaded'}
             </span>
           </div>
         </div>
@@ -156,7 +157,7 @@ export default function VisitorDetailPage({ token, setTab, visitorId }) {
                         <div className="h-1.5 rounded-full"
                           style={{
                             background: 'linear-gradient(90deg, #6c63ff, #00d4ff)',
-                            width: `${Math.min((p.count / visitor.visitCount) * 100, 100)}%`
+                            width: `${Math.min((p.count / Math.max(visitor.visitCount, 1)) * 100, 100)}%`
                           }} />
                       </div>
                     </div>

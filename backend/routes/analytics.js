@@ -1,31 +1,15 @@
 const express = require("express");
 const router = express.Router();
-
-const {
-  getUniqueVisitors,
-  getTodayVisitors,
-  getTotalSessions,
-  getPageViews,
-  getResumeDownloads,
-  getAllVisitors,
-  markResumeDownload,
-  trackVisitorpage,
-  getVisitorDetail,
-} = require("../controller/analyticsController");
+const c = require("../controller/analyticsController");
 const requireAuth = require("../middleware/auth");
-const trackVisitor = require("../middleware/trackVisitor");
 
-router.get("/unique-visitors", getUniqueVisitors); // total users
-router.get("/today-visitors", getTodayVisitors); // today active users
-router.get("/total-sessions", getTotalSessions); // total sessions
-router.get("/page-views", getPageViews); // total activity
-router.get("/resume-downloads", getResumeDownloads); // resume clicks
-router.get("/all", requireAuth, getAllVisitors); // all visitors
-router.get("/visitor/:visitorId", requireAuth, getVisitorDetail); 
-// BAAD MEIN:
+// Public (called by the portfolio site). Always answer 204.
+router.post("/track-visit", c.trackVisit);
+router.post("/resume-download", c.trackResumeDownload);
 
-router.post("/track-visit", trackVisitor, trackVisitorpage);
-router.post("/resume-download", trackVisitor, markResumeDownload); // marks current visitor as having downloaded resume
-
+// Admin only
+router.get("/summary", requireAuth, c.getSummary);
+router.get("/visitors", requireAuth, c.listVisitors);
+router.get("/visitor/:visitorId", requireAuth, c.getVisitor);
 
 module.exports = router;

@@ -51,6 +51,7 @@ app.use("/api/analytics", analyticsRoutes);
 
 // ── NEW DYNAMIC ROUTES ──────────────────────────────────────
 app.use("/api/profile", require("./routes/profile"));
+app.use("/api/resume", require("./routes/resume"));
 app.use("/api/skills", require("./routes/skills"));
 app.use("/api/experience", require("./routes/experience"));
 app.use("/api/education", require("./routes/education"));
