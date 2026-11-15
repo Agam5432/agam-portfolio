@@ -9,6 +9,7 @@ router.post("/resume-download", c.trackResumeDownload);
 
 // Admin only
 router.get("/summary", requireAuth, c.getSummary);
+router.get("/details", requireAuth, c.getDetails);
 router.get("/visitors", requireAuth, c.listVisitors);
 router.get("/visitor/:visitorId", requireAuth, c.getVisitor);
 

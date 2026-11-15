@@ -61,7 +61,7 @@ export default function ResumeCard({ token }) {
           )}
         </div>
         {info?.exists && (
-          <a href={`${base}/api/resume?view=1`} target="_blank" rel="noreferrer"
+          <a href={`${base}/api/resume?view=1&v=${new Date(info.updatedAt).getTime()}`} target="_blank" rel="noreferrer"
             className="p-2 rounded-lg" style={{ color: '#00d4ff' }} title="Preview"><ExternalLink size={15} /></a>
         )}
         {info?.exists && (

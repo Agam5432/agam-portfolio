@@ -231,4 +231,54 @@ exports.getVisitor = async (req, res) => {
   }
 };
 
+// Per-metric detail lists, so every dashboard card opens a genuinely different view.
+//  type=pageviews → every page view event
+//  type=sessions  → one row per session (entry page, pages viewed, duration)
+//  type=resume    → every resume download event
+exports.getDetails = async (req, res) => {
+  try {
+    const type = req.query.type;
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 25, 1), 100);
+    const days = Math.min(Math.max(parseInt(req.query.days, 10) || 30, 1), 365);
+    const since = new Date(istDayStart().getTime() - (days - 1) * 86400000);
+    const coll = Visitor.collection.collectionName;
+    const join = [
+      { $lookup: { from: coll, localField: "visitorId", foreignField: "visitorId", as: "v" } },
+      { $addFields: { v: { $arrayElemAt: ["$v", 0] } } },
+    ];
+    const skipLimit = [{ $skip: (page - 1) * limit }, { $limit: limit }];
+    let items, total;
+
+    if (type === "pageviews" || type === "resume") {
+      const match = { type: type === "resume" ? "resume" : "view", at: { $gte: since } };
+      [items, total] = await Promise.all([
+        Event.aggregate([{ $match: match }, { $sort: { at: -1 } }, ...skipLimit, ...join, {
+          $project: { _id: 0, at: 1, page: 1, visitorId: 1, device: { $ifNull: ["$device", "$v.device"] },
+            browser: { $ifNull: ["$browser", "$v.browser"] }, os: { $ifNull: ["$os", "$v.os"] }, referrer: "$v.referrer" } }]),
+        Event.countDocuments(match),
+      ]);
+    } else if (type === "sessions") {
+      const base = [{ $match: { type: "view", at: { $gte: since }, sessionId: { $ne: null } } },
+        { $sort: { at: 1 } },
+        { $group: { _id: "$sessionId", visitorId: { $first: "$visitorId" }, start: { $first: "$at" }, end: { $last: "$at" },
+            entry: { $first: "$page" }, exit: { $last: "$page" }, views: { $sum: 1 },
+            device: { $first: "$device" }, browser: { $first: "$browser" }, os: { $first: "$os" } } }];
+      const [rows, cnt] = await Promise.all([
+        Event.aggregate([...base, { $sort: { start: -1 } }, ...skipLimit]),
+        Event.aggregate([...base, { $count: "n" }]),
+      ]);
+      items = rows.map(r => ({ sessionId: r._id, visitorId: r.visitorId, start: r.start, durationSec: Math.round((r.end - r.start) / 1000),
+        entry: r.entry, exit: r.exit, views: r.views, device: r.device, browser: r.browser, os: r.os }));
+      total = cnt[0]?.n || 0;
+    } else {
+      return res.status(400).json({ error: "Unknown type" });
+    }
+    res.json({ items, total, page, pages: Math.max(Math.ceil(total / limit), 1) });
+  } catch (err) {
+    console.error("getDetails error:", err.message);
+    res.status(500).json({ error: "Failed to load details" });
+  }
+};
+
 exports._internals = { parseUA, cleanReferrer, cleanPage, istDayStart };

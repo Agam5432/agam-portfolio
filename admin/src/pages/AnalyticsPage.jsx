@@ -18,7 +18,7 @@ function Stat({ label, value, sub, icon: Icon, color, onClick }) {
       {sub && <p className="text-xs" style={muted}>{sub}</p>}
       {onClick && (
         <button onClick={onClick} className="flex items-center gap-1.5 text-xs font-semibold self-start mt-1" style={{ color }}>
-          View visitors <ArrowRight size={12} />
+          View details <ArrowRight size={12} />
         </button>
       )}
     </motion.div>
@@ -95,7 +95,7 @@ export default function AnalyticsPage({ token, setTab, setVisitorFilter }) {
       .catch(() => setError('Could not load analytics. The server may be waking up — try again in a few seconds.'))
   }, [token, days])
 
-  const go = f => { setVisitorFilter(f); setTab('visitors') }
+  const go = f => { setVisitorFilter(f, days) }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

@@ -122,7 +122,7 @@ function CodeEditor() {
 
 export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
-  const [hasUploadedResume, setHasUploadedResume] = useState(false);
+  const [resumeVersion, setResumeVersion] = useState(null);
   const navigate = useNavigate();
 
   // 🛡 Guard against React StrictMode double-firing useEffect in dev mode,
@@ -137,7 +137,7 @@ export default function Hero({ goTo }) {
       .then((r) => setData({ ...DEFAULTS, ...r.data }))
       .catch(() => {});
     axios.get(`/api/resume/info`)
-      .then((r) => setHasUploadedResume(Boolean(r.data?.exists)))
+      .then((r) => setResumeVersion(r.data?.exists ? new Date(r.data.updatedAt).getTime() : null))
       .catch(() => {});
   }, []);
 
@@ -147,7 +147,8 @@ export default function Hero({ goTo }) {
 
   // Resume uploaded from the admin panel wins; otherwise the profile URL / bundled static file.
   const baseURL = axios.defaults.baseURL || "";
-  const resumeHref = hasUploadedResume ? `${baseURL}/api/resume` : data.resumeUrl;
+  // ?v= busts any browser/CDN cache whenever a new PDF is uploaded
+  const resumeHref = resumeVersion ? `${baseURL}/api/resume?v=${resumeVersion}` : data.resumeUrl;
 
   const nameParts = data.name.split(" ");
   const firstName = nameParts[0];

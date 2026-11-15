@@ -7,6 +7,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 
 // GET /api/resume/info (public) – lets the site know whether an uploaded resume exists
 router.get("/info", async (req, res) => {
+  res.set("Cache-Control", "no-store");
   try {
     const r = await Resume.findOne({}, "filename size updatedAt").lean();
     res.json(r ? { exists: true, filename: r.filename, size: r.size, updatedAt: r.updatedAt } : { exists: false });
@@ -26,7 +27,7 @@ router.get("/", async (req, res) => {
       "Content-Type": r.contentType || "application/pdf",
       "Content-Length": buf.length,
       "Content-Disposition": `${req.query.view ? "inline" : "attachment"}; filename="${r.filename}"`,
-      "Cache-Control": "public, max-age=300",
+      "Cache-Control": "no-store, max-age=0",
       // The frontend lives on another origin; allow it to fetch/embed the file.
       "Cross-Origin-Resource-Policy": "cross-origin",
     });

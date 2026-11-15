@@ -35,6 +35,7 @@ export default function Dashboard({ token, logout }) {
   const tab = searchParams.get('tab') || 'overview'
   const visitorFilter = searchParams.get('filter') || 'unique'
   const visitorId = searchParams.get('visitorId') || null
+  const days = searchParams.get('days') || '30'
 
   const setTab = (newTab) => {
     setSearchParams(prev => {
@@ -49,8 +50,8 @@ export default function Dashboard({ token, logout }) {
     })
   }
 
-  const setVisitorFilter = (f) => {
-    setSearchParams({ tab: 'visitors', filter: f })
+  const setVisitorFilter = (f, d = 30) => {
+    setSearchParams({ tab: 'visitors', filter: f, days: String(d) })
   }
 
   const setVisitorId = (id) => {
@@ -68,7 +69,7 @@ export default function Dashboard({ token, logout }) {
       case 'contacts':      return <ContactsPage token={token} />
       case 'chats':         return <ChatsPage token={token} />
       case 'analytics':     return <AnalyticsPage token={token} setTab={setTab} setVisitorFilter={setVisitorFilter} />
-      case 'visitors':      return <VisitorsTable token={token} setTab={setTab} visitorFilter={visitorFilter} setVisitorId={setVisitorId} />
+      case 'visitors':      return <VisitorsTable token={token} setTab={setTab} visitorFilter={visitorFilter} days={days} setVisitorId={setVisitorId} />
       case 'visitorDetail': return <VisitorDetailPage token={token} setTab={setTab} visitorId={visitorId} />
       default:              return null
     }
