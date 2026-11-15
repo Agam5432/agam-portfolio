@@ -13,11 +13,11 @@ const profile = {
   linkedinUrl: "https://www.linkedin.com/in/agam-tyagi-6624a7204",
   resumeUrl: "/Agam_Tyagi_Resume.pdf",
   stats: [
-    { num: "2.5 yrs", label: "Software Engineering" },
-    { num: "2 yrs", label: "Generative AI" },
-    { num: "6", label: "Projects Shipped" },
+    { num: "2+ yrs", label: "Professional Experience" },
+    { num: "3", label: "AI Systems Built" },
+    { num: "6", label: "Projects Built" },
   ],
-  aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2.5 years of software engineering experience and 2 years of hands-on Generative AI work at Backup Infotech.",
+  aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2+ years of professional experience at Backup Infotech. I started as a developer and, after my internship, began working on AI integration and gradually moved into Generative AI.",
   aboutPara2: "I build production LLM applications: RAG chatbots on Qdrant vector search, agentic assistants with LangGraph tool calling, and real-time voice agents on the Gemini Live API.",
   aboutPara3: "MCA from Chandigarh University. Backend foundation in Node.js, Express.js, FastAPI, MongoDB and PostgreSQL, with React.js on the frontend.",
   aboutTags: ["LangGraph", "LangChain", "RAG", "Qdrant", "Groq", "Gemini Live API", "Node.js", "FastAPI", "React"],
@@ -45,11 +45,12 @@ const skillGroups = [
 
 const experiences = [
   {
-    role: "Generative AI & Full Stack Developer",
+    role: "Developer → Generative AI & Full Stack Developer",
     company: "Backup Infotech",
     period: "Jul 2024 – Present",
     location: "Mohali, Punjab, India",
     points: [
+      "Joined Backup Infotech in Jul 2024 as a developer; after the internship period I began working on AI integration and gradually moved into Generative AI and agentic systems.",
       "Built an agentic AI shopping assistant with LangGraph tool calling, real-time voice (Gemini Live API) and Shopify integration for product search, recommendations and cart management.",
       "Developed a production RAG chatbot that automates website query handling, using Qdrant vector search, local embeddings and Groq Llama 3.3-70B for grounded, domain-specific answers.",
       "Designed AI-powered features for client products, including AI talent matching and recommendations for a hiring platform.",

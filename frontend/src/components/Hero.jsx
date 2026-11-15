@@ -16,9 +16,9 @@ const DEFAULTS = {
   linkedinUrl: "https://www.linkedin.com/in/agam-tyagi-6624a7204",
   resumeUrl: "/Agam_Tyagi_Resume.pdf",
   stats: [
-    { num: "2.5 yrs", label: "Software Engineering" },
-    { num: "2 yrs", label: "Generative AI" },
-    { num: "6", label: "Projects Shipped" },
+    { num: "2+ yrs", label: "Professional Experience" },
+    { num: "3", label: "AI Systems Built" },
+    { num: "6", label: "Projects Built" },
   ],
 };
 
