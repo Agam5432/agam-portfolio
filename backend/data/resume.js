@@ -9,7 +9,7 @@ Location: Mohali, Punjab, India
 Availability: open to new opportunities (onsite, office-based and remote).
 
 PROFESSIONAL SUMMARY
-AI Engineer with 2.3 years of software engineering experience and 1+ year of hands-on Generative AI work, building production LLM applications: RAG pipelines, agentic AI systems with LangGraph tool calling, and real-time voice agents. Strong backend foundation in Node.js, Express.js, FastAPI, MongoDB, PostgreSQL and Qdrant vector search, plus React.js for the frontend. Delivered AI chatbots, voice shopping assistants and AI-driven hiring features that solve real business problems end to end.
+AI Engineer with 2.5 years of software engineering experience and 2 years of hands-on Generative AI work, building production LLM applications: RAG pipelines, agentic AI systems with LangGraph tool calling, and real-time voice agents. Strong backend foundation in Node.js, Express.js, FastAPI, MongoDB, PostgreSQL and Qdrant vector search, plus React.js for the frontend. Delivered AI chatbots, voice shopping assistants and AI-driven hiring features that solve real business problems end to end.
 
 TECHNICAL SKILLS
 - Generative AI and LLMs: LLM Integration, Prompt Engineering, Retrieval-Augmented Generation (RAG), Agentic AI, Tool Calling, AI Workflow Orchestration, Conversational AI

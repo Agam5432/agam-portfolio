@@ -12,7 +12,7 @@ const DEFAULT_CARDS = [
 const DEFAULT_TAGS = ['LangGraph', 'LangChain', 'RAG', 'Qdrant', 'Groq', 'Gemini Live API', 'Node.js', 'FastAPI', 'React']
 
 const DEFAULTS = {
-  aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2.3 years of software engineering experience and 1+ year of hands-on Generative AI work at Backup Infotech.",
+  aboutPara1: "I'm an AI Engineer based in Mohali, Punjab, with 2.5 years of software engineering experience and 2 years of hands-on Generative AI work at Backup Infotech.",
   aboutPara2: "I build production LLM applications: RAG chatbots on Qdrant vector search, agentic assistants with LangGraph tool calling, and real-time voice agents on the Gemini Live API.",
   aboutPara3: "MCA from Chandigarh University. Backend foundation in Node.js, Express.js, FastAPI, MongoDB and PostgreSQL, with React.js on the frontend.",
   aboutTags: DEFAULT_TAGS,
