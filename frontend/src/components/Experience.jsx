@@ -11,12 +11,12 @@ export default function Experience() {
   const aiChips = skills.filter(g => g.isAI).flatMap(g => g.chips || []).slice(0, 12)
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
-      style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+    <section id="experience" className="scroll-mt-16 px-6 md:px-12 lg:px-16 py-14 md:py-20" style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+      <div className="max-w-7xl mx-auto">
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.4 }}>
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>Work Experience</p>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-12">Where I've Worked</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12">Where I've Worked</h2>
       </motion.div>
 
       <StatusMessage loading={loading} error={error} empty={!loading && !error && experiences.length === 0} label="experience" onRetry={retry} />
@@ -25,7 +25,7 @@ export default function Experience() {
       <div className="space-y-6 lg:col-span-2">
         {!loading && experiences.map((exp, idx) => (
           <motion.div key={exp._id || idx}
-            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: 0.1 + idx * 0.1, duration: 0.4 }}
             className="rounded-2xl p-8 relative"
             style={{ background: '#14141e', border: '1px solid #2a2a3a', borderLeft: '3px solid #6c63ff' }}>
@@ -51,7 +51,7 @@ export default function Experience() {
 
             <div className="space-y-4">
               {(exp.points || []).map((p, i) => (
-                <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                <motion.div key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }}
                   transition={{ delay: 0.25 + i * 0.07 }}
                   className="flex items-start gap-3 text-sm leading-relaxed"
                   style={{ color: '#888899' }}>
@@ -78,7 +78,7 @@ export default function Experience() {
       {/* Right column: all values come from the backend */}
       <aside className="space-y-5 lg:sticky lg:top-24">
         {profile && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.4 }}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.3, duration: 0.4 }}
             className="rounded-2xl p-6" style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
             <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#00d4ff' }}>At a glance</p>
             {profile.stats?.length > 0 && (
@@ -100,7 +100,7 @@ export default function Experience() {
         )}
 
         {aiChips.length > 0 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.4 }}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.4, duration: 0.4 }}
             className="rounded-2xl p-6" style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
             <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#6c63ff' }}>Core AI stack</p>
             <div className="flex flex-wrap gap-2">
@@ -113,7 +113,7 @@ export default function Experience() {
         )}
 
         {education.length > 0 && (
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 0.4 }}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.5, duration: 0.4 }}
             className="rounded-2xl p-6" style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
             <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#00d4ff' }}>
               <GraduationCap size={13} className="inline mr-1 -mt-0.5" /> Education
@@ -130,7 +130,7 @@ export default function Experience() {
         )}
 
         {profile?.email && (
-          <motion.a href={`mailto:${profile.email}`} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.4 }}
+          <motion.a href={`mailto:${profile.email}`} initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.6, duration: 0.4 }}
             className="flex items-center justify-center gap-2 rounded-2xl p-4 text-sm font-semibold"
             style={{ background: 'linear-gradient(135deg, #6c63ff, #00d4ff)', color: '#fff' }}>
             <Mail size={15} /> Let's talk
@@ -138,6 +138,7 @@ export default function Experience() {
         )}
       </aside>
       </div>
+    </div>
     </section>
   )
 }

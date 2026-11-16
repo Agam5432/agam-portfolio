@@ -34,24 +34,24 @@ export default function Contact() {
   ].filter(Boolean) : []
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
-      style={{ background: '#0a0a0f' }}>
+    <section id="contact" className="scroll-mt-16 px-6 md:px-12 lg:px-16 py-14 md:py-20" style={{ background: '#0a0a0f' }}>
+      <div className="max-w-7xl mx-auto">
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.4 }}>
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>Contact</p>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-3">Let's Build Something</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">Let's Build Something</h2>
         <p className="text-sm mb-12 max-w-lg leading-relaxed" style={{ color: '#888899' }}>
           Open to full-time roles, freelance projects, and collaborations. Drop a message or reach out directly.
         </p>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-12 max-w-4xl">
+      <div className="grid md:grid-cols-2 gap-8 md:gap-16">
         {/* Contact Links */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.15 }}
           className="space-y-4">
           {contactLinks.map((item, i) => (
             <motion.a key={item.label} href={item.href} target={item.href.startsWith('http') ? '_blank' : '_self'}
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: 0.2 + i * 0.07 }}
               className="flex items-center gap-3 p-4 rounded-xl transition-all duration-200 card-hover"
               style={{ background: '#14141e', border: '1px solid #2a2a3a', color: '#f0f0f5', textDecoration: 'none' }}>
@@ -60,7 +60,7 @@ export default function Contact() {
             </motion.a>
           ))}
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.5 }}
             className="mt-6 p-4 rounded-xl text-sm leading-relaxed"
             style={{ background: 'rgba(108,99,255,0.06)', border: '1px solid rgba(108,99,255,0.15)', color: '#888899' }}>
             💬 Or just chat with <span style={{ color: '#6c63ff' }}>Nexora</span> (bottom right) — my AI assistant can answer any questions about me instantly!
@@ -68,9 +68,9 @@ export default function Contact() {
         </motion.div>
 
         {/* Contact Form */}
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.2 }}>
           {status === 'success' ? (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: "-40px" }}
               className="flex flex-col items-center justify-center h-full gap-4 p-8 rounded-2xl text-center"
               style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
               <CheckCircle size={40} style={{ color: '#10b981' }} />
@@ -115,6 +115,7 @@ export default function Contact() {
           )}
         </motion.div>
       </div>
+    </div>
     </section>
   )
 }

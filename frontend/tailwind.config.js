@@ -14,7 +14,10 @@ export default {
         muted: '#888899',
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        inter: ['DM Sans', 'sans-serif'],
+        sans: ['DM Sans', 'sans-serif'],
+        heading: ['Space Grotesk', 'DM Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
       }
     }
   },

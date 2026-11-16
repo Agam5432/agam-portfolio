@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Download, ArrowRight, Github, Linkedin } from "lucide-react";
 import axios from "axios";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { scrollToId } from '../lib/scroll';
 
 const DEFAULTS = {
   name: "Agam Tyagi",
@@ -83,7 +83,7 @@ function CodeEditor() {
             transition={{ duration: 0.12 }}
             className="flex gap-4">
             <span style={{ color: '#333355', userSelect: 'none', minWidth: '18px', textAlign: 'right', fontSize: '11px' }}>{i + 1}</span>
-            <span>
+            <span style={{ whiteSpace: 'pre' }}>
               {line.tokens.map((tok, j) => (
                 <span key={j} style={{ color: tok.c }}>{tok.t}</span>
               ))}
@@ -123,7 +123,6 @@ function CodeEditor() {
 export default function Hero({ goTo }) {
   const [data, setData] = useState(DEFAULTS);
   const [resumeVersion, setResumeVersion] = useState(null);
-  const navigate = useNavigate();
 
   // 🛡 Guard against React StrictMode double-firing useEffect in dev mode,
   // which was causing 2 visitor documents to be created on a single page load.
@@ -155,7 +154,7 @@ export default function Hero({ goTo }) {
   const lastName = nameParts.slice(1).join(" ");
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-16 py-16 relative overflow-hidden">
+    <section id="home" className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12 md:py-16 relative overflow-hidden">
 
       {/* Background glows */}
       <div className="absolute top-0 right-0 w-[600px] h-[500px] rounded-full pointer-events-none"
@@ -164,7 +163,7 @@ export default function Hero({ goTo }) {
         style={{ background: 'radial-gradient(ellipse, rgba(0,212,255,0.06) 0%, transparent 70%)', transform: 'translate(-20%, 20%)' }} />
 
       {/* 2 Column — Left content + Right editor */}
-      <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-8 w-full">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-8 w-full max-w-7xl mx-auto relative">
 
         {/* ── LEFT SIDE ── */}
         <div className="flex-1 flex flex-col">
@@ -189,7 +188,7 @@ export default function Hero({ goTo }) {
 
           {/* Name */}
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-none mb-4">
+            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-4">
             {firstName} <span className="gradient-text">{lastName}</span>
           </motion.h1>
 
@@ -209,11 +208,11 @@ export default function Hero({ goTo }) {
           {/* Buttons */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.39 }}
             className="flex flex-wrap gap-3 mb-16">
-            <button onClick={() => navigate("/projects")}
+            <button onClick={() => scrollToId("projects")}
               className="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               View Projects <ArrowRight size={16} />
             </button>
-            <button onClick={() => navigate("/contact")}
+            <button onClick={() => scrollToId("contact")}
               className="btn-outline flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold">
               Let's Talk
             </button>
@@ -229,7 +228,7 @@ export default function Hero({ goTo }) {
             {(data.stats || []).map((s, i) => (
               <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + i * 0.07 }}>
-                <div className="text-3xl md:text-4xl font-black text-[#f0f0f5]">{s.num}</div>
+                <div className="text-3xl md:text-4xl font-bold text-[#f0f0f5]">{s.num}</div>
                 <div className="text-xs md:text-sm mt-1" style={{ color: '#888899' }}>{s.label}</div>
               </motion.div>
             ))}

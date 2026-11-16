@@ -32,17 +32,17 @@ export default function About() {
   const tags = (data.aboutTags?.length > 0) ? data.aboutTags : DEFAULT_TAGS
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
-      style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+    <section id="about" className="scroll-mt-16 px-6 md:px-12 lg:px-16 py-14 md:py-20" style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+      <div className="max-w-7xl mx-auto">
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.4 }}>
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>About Me</p>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-12">Who I Am</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12">Who I Am</h2>
       </motion.div>
 
       <div className="grid md:grid-cols-2 gap-12 items-start">
         {/* Text */}
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15, duration: 0.4 }}
+        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.15, duration: 0.4 }}
           className="space-y-5">
           {data.aboutPara1 && (
             <p className="text-base leading-relaxed" style={{ color: '#888899' }}
@@ -70,7 +70,7 @@ export default function About() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {cards.map((c, i) => (
             <motion.div key={c.title || i}
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: 0.2 + i * 0.08, duration: 0.35 }}
               className="p-5 rounded-2xl card-hover"
               style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
@@ -81,6 +81,7 @@ export default function About() {
           ))}
         </div>
       </div>
+    </div>
     </section>
   )
 }

@@ -1,8 +1,5 @@
 import { trackPageView } from "./analytics";
-import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect } from "react";
-import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -14,51 +11,47 @@ import Education from './components/Education'
 import Contact from './components/Contact'
 import NexoraChat from './components/NexoraChat'
 
-function AppWrapper() {
-  return (
-    <Router>
-      <App />
-    </Router>
-  )
+// Old multi-page URLs (/about, /projects ...) still work: they scroll to the matching section.
+const PATH_TO_SECTION = {
+  '/about': 'about', '/skills': 'skills', '/experience': 'experience',
+  '/projects': 'projects', '/education': 'education', '/contact': 'contact',
 }
 
 function App() {
-  const location = useLocation()
-useEffect(() => {
-  const page = location.pathname;
-  // avoid duplicate calls (StrictMode double effects, same-page re-renders)
-  if (sessionStorage.getItem("lastTrackedPage") === page) return;
-  sessionStorage.setItem("lastTrackedPage", page);
-  trackPageView(page);
-}, [location.pathname]);
+  useEffect(() => {
+    // the whole site is one page now, so one page view per visit
+    if (sessionStorage.getItem("lastTrackedPage") !== "/") {
+      sessionStorage.setItem("lastTrackedPage", "/");
+      trackPageView("/");
+    }
+    const target = PATH_TO_SECTION[window.location.pathname.replace(/\/+$/, '')]
+    if (target) {
+      window.history.replaceState(null, '', '/')
+      setTimeout(() => document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' }), 600)
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] font-inter">
+    <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5] font-sans">
       <Navbar />
 
       <main className="pt-16">
-        <AnimatePresence mode="wait">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
-            <Routes>
-              <Route path="/" element={<Hero />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/skills" element={<Skills />} />
-              <Route path="/experience" element={<Experience />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/education" element={<Education />} />
-              <Route path="/contact" element={<Contact />} />
-            </Routes>
-          </motion.div>
-        </AnimatePresence>
+        <Hero />
+        <About />
+        <Skills />
+        <Experience />
+        <Projects />
+        <Education />
+        <Contact />
       </main>
+
+      <footer className="px-6 py-8 text-center text-xs" style={{ borderTop: '1px solid #2a2a3a', color: '#888899' }}>
+        © {new Date().getFullYear()} Agam Tyagi · AI Engineer · Mohali, Punjab, India
+      </footer>
 
       <NexoraChat />
     </div>
   )
 }
 
-export default AppWrapper
+export default App

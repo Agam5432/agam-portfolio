@@ -22,18 +22,18 @@ export default function Education() {
   const highlightNote = edu.find(e => e.highlight && e.note)?.note || DEFAULT_EDU[0].note
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
-      style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+    <section id="education" className="scroll-mt-16 px-6 md:px-12 lg:px-16 py-14 md:py-20" style={{ background: 'linear-gradient(180deg, #0a0a0f 0%, #111118 100%)' }}>
+      <div className="max-w-7xl mx-auto">
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.4 }}>
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>Education</p>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-12">Academic Background</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-12">Academic Background</h2>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-5 max-w-3xl">
+      <div className="grid md:grid-cols-2 gap-5">
         {edu.map((e, i) => (
           <motion.div key={e._id || e.degree}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: 0.15 + i * 0.1, duration: 0.35 }}
             className="p-6 rounded-2xl card-hover"
             style={{
@@ -50,8 +50,8 @@ export default function Education() {
       </div>
 
       {highlightNote && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-          className="mt-12 max-w-xl p-5 rounded-2xl"
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true, margin: "-40px" }} transition={{ delay: 0.4 }}
+          className="mt-8 p-5 rounded-2xl"
           style={{ background: 'rgba(108,99,255,0.05)', border: '1px solid rgba(108,99,255,0.15)' }}>
           <div className="flex items-start gap-3">
             <GraduationCap size={18} style={{ color: '#6c63ff', marginTop: 2, flexShrink: 0 }} />
@@ -59,6 +59,7 @@ export default function Education() {
           </div>
         </motion.div>
       )}
+    </div>
     </section>
   )
 }

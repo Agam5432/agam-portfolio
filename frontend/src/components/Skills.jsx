@@ -6,12 +6,12 @@ export default function Skills() {
   const { data: skillGroups, loading, error, retry } = useApiList('/api/skills')
 
   return (
-    <section className="min-h-[calc(100vh-64px)] flex flex-col justify-center px-6 md:px-16 lg:px-24 py-16"
-      style={{ background: '#0a0a0f' }}>
+    <section id="skills" className="scroll-mt-16 px-6 md:px-12 lg:px-16 py-14 md:py-20" style={{ background: '#0a0a0f' }}>
+      <div className="max-w-7xl mx-auto">
 
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.4 }}>
         <p className="text-xs font-semibold uppercase tracking-[3px] mb-3" style={{ color: '#6c63ff' }}>Technical Skills</p>
-        <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-3">What I Work With</h2>
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">What I Work With</h2>
         <p className="text-sm mb-10" style={{ color: '#888899' }}>
           Generative AI, RAG, agentic systems and the full-stack foundation behind them.
         </p>
@@ -22,7 +22,7 @@ export default function Skills() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {!loading && skillGroups.map((group, i) => (
           <motion.div key={group.label || i}
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: 0.1 + i * 0.06, duration: 0.35 }}
             className="p-5 rounded-2xl"
             style={{ background: '#14141e', border: '1px solid #2a2a3a' }}>
@@ -46,6 +46,7 @@ export default function Skills() {
           </motion.div>
         ))}
       </div>
+    </div>
     </section>
   )
 }
